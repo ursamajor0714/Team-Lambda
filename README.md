@@ -20,6 +20,7 @@ Our goal is to make a simple and easy-to-visit community!
 ### 사전 준비물 (한 번만)
 
 각자 컴퓨터에 **Docker Desktop** 설치:
+
 - Windows/Mac: <https://www.docker.com/products/docker-desktop>
 - 설치 후 한 번 실행해서 켜둔 상태로 둡니다.
 
@@ -34,6 +35,7 @@ docker compose up
 처음엔 이미지 빌드하느라 5~10분 정도 걸립니다. 두 번째부턴 캐시 덕분에 30초 이내.
 
 다 뜨면:
+
 - 프론트엔드: <http://localhost:5173>
 - 백엔드 API: <http://localhost:8000/api/posts/>
 
@@ -50,6 +52,7 @@ docker compose down
 rm db.sqlite3
 docker compose up
 ```
+
 (첫 실행 때 Node 백엔드가 필요한 테이블을 자동으로 만들면서 새 DB가 생깁니다)
 
 ---
@@ -116,16 +119,16 @@ npm run dev
 
 ## 🌐 API 엔드포인트
 
-| 메서드 | 경로 | 설명 |
-|---|---|---|
-| GET | `/api/csrf/` | CSRF 토큰 발급 (첫 진입 시 1회) |
-| GET | `/api/auth/me/` | 현재 로그인 상태 |
-| POST | `/api/auth/register/` | 회원가입 |
-| POST | `/api/auth/login/` | 로그인 |
-| POST | `/api/auth/logout/` | 로그아웃 |
-| GET | `/api/posts/` | 글 목록 (검색·페이지네이션) |
-| GET | `/api/posts/<pk>/` | 글 상세 (+ 댓글, 이전/다음) |
-| POST | `/api/posts/create/` | 글 작성 |
-| POST | `/api/posts/<pk>/like/` | 좋아요 |
-| POST | `/api/posts/<pk>/hate/` | 싫어요 (로그인 필요) |
-| POST | `/api/posts/<pk>/comments/` | 댓글 작성 |
+| 메서드 | 경로                        | 설명                            |
+| ------ | --------------------------- | ------------------------------- |
+| GET    | `/api/csrf/`                | CSRF 토큰 발급 (첫 진입 시 1회) |
+| GET    | `/api/auth/me/`             | 현재 로그인 상태                |
+| POST   | `/api/auth/register/`       | 회원가입                        |
+| POST   | `/api/auth/login/`          | 로그인                          |
+| POST   | `/api/auth/logout/`         | 로그아웃                        |
+| GET    | `/api/posts/`               | 글 목록 (검색·페이지네이션)     |
+| GET    | `/api/posts/<pk>/`          | 글 상세 (+ 댓글, 이전/다음)     |
+| POST   | `/api/posts/create/`        | 글 작성                         |
+| POST   | `/api/posts/<pk>/like/`     | 좋아요                          |
+| POST   | `/api/posts/<pk>/hate/`     | 싫어요 (로그인 필요)            |
+| POST   | `/api/posts/<pk>/comments/` | 댓글 작성                       |

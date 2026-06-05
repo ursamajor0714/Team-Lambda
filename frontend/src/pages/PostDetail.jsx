@@ -83,6 +83,21 @@ const load = () => api.postDetail(pk).then(data => {
     load()
   }
 
+  // 댓글/대댓글 삭제 (본인 또는 관리자만 버튼이 보인다)
+  const onDeleteComment = async (cid) => {
+    if (!confirm('이 댓글을 삭제하시겠습니까?')) return
+    try {
+      await api.commentDelete(pk, cid)
+      load()
+    } catch (e) {
+      alert(e.message)
+    }
+  }
+
+  // 이 댓글을 지울 수 있는 사람인가? (로그인했고, 본인 댓글이거나 관리자)
+  const canDeleteComment = (c) =>
+    user && (user.is_admin || user.username === c.user)
+
   if (!post) return <p>불러오는 중…</p>
 
   return (
@@ -133,6 +148,9 @@ const load = () => api.postDetail(pk).then(data => {
         <button className="btn" style={{ fontSize: 12, padding: '2px 8px' }} onClick={() => onCommentLike(c.id, 'like')}>👍 {c.likes}</button>
         <button className="btn" style={{ fontSize: 12, padding: '2px 8px' }} onClick={() => onCommentLike(c.id, 'hate')}>👎 {c.hates}</button>
         <button className="btn" style={{ fontSize: 12, padding: '2px 8px' }} onClick={() => setShowReply({ ...showReply, [c.id]: !showReply[c.id] })}>답글</button>
+        {canDeleteComment(c) && (
+          <button className="btn" style={{ fontSize: 12, padding: '2px 8px', color: 'red' }} onClick={() => onDeleteComment(c.id)}>삭제</button>
+        )}
       </div>
 
       {/* 대댓글 목록 */}
@@ -145,6 +163,9 @@ const load = () => api.postDetail(pk).then(data => {
               <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                 <button className="btn" style={{ fontSize: 12, padding: '2px 8px' }} onClick={() => onCommentLike(r.id, 'like')}>👍 {r.likes}</button>
                 <button className="btn" style={{ fontSize: 12, padding: '2px 8px' }} onClick={() => onCommentLike(r.id, 'hate')}>👎 {r.hates}</button>
+                {canDeleteComment(r) && (
+                  <button className="btn" style={{ fontSize: 12, padding: '2px 8px', color: 'red' }} onClick={() => onDeleteComment(r.id)}>삭제</button>
+                )}
               </div>
             </li>
           ))}
@@ -189,12 +210,12 @@ const load = () => api.postDetail(pk).then(data => {
       {/* 7. 목록 버튼, 삭제버튼 */}
       <div style={{ display: 'flex', gap: 8, marginTop: 24 }}>
   <button className="btn" onClick={() => navigate('/home')}>목록</button>
-  {user && user.username === post.user && (
+  {user && (user.username === post.user || user.is_admin) && (
     <>
       <button className="btn" onClick={() => navigate(`/post/${pk}/edit`)}>수정</button>
       <button className="btn" onClick={onDelete}>삭제</button>
     </>
-    
+
   )}
 </div>
 </div>

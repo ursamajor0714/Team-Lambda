@@ -268,6 +268,47 @@ router.post("/posts/:pk/comments/", (req, res) => {
   });
 });
 
+// ── 댓글 삭제 (DELETE /api/posts/:pk/comments/:cid/) ─────────────────
+//    본인 댓글이거나 관리자면 삭제 가능 (관리자는 남의 댓글도 삭제 OK).
+router.delete("/posts/:pk/comments/:cid/", (req, res) => {
+  if (!req.session.userId) {
+    return res.status(403).json({ detail: "로그인이 필요합니다." });
+  }
+  const { cid } = req.params;
+  const comment = db
+    .prepare("SELECT * FROM myapp_comment WHERE id = ?")
+    .get(cid);
+  if (!comment) {
+    return res.status(404).json({ detail: "존재하지 않는 댓글입니다." });
+  }
+
+  // 본인 댓글이거나 관리자면 통과
+  const me = db
+    .prepare("SELECT is_admin FROM users WHERE id = ?")
+    .get(req.session.userId);
+  if (comment.user !== req.session.username && !(me && me.is_admin)) {
+    return res.status(403).json({ detail: "본인 댓글만 삭제할 수 있습니다." });
+  }
+
+  // 이 댓글에 달린 대댓글(자식)들도 같이 지운다. (안 그러면 주인 없는 답글이 남음)
+  const childIds = db
+    .prepare("SELECT id FROM myapp_comment WHERE parent_id = ?")
+    .all(cid)
+    .map((r) => r.id);
+  const allIds = [Number(cid), ...childIds];
+  const placeholders = allIds.map(() => "?").join(",");
+
+  // 댓글의 좋아요/싫어요 기록도 정리하고, 댓글 자체를 삭제한다.
+  db.prepare(
+    `DELETE FROM myapp_comment_like WHERE comment_id IN (${placeholders})`,
+  ).run(...allIds);
+  db.prepare(`DELETE FROM myapp_comment WHERE id IN (${placeholders})`).run(
+    ...allIds,
+  );
+
+  res.json({ detail: "댓글이 삭제되었습니다." });
+});
+
 // ── 글 삭제 (DELETE /api/posts/:pk/) ─────────────────────────────────
 router.delete("/posts/:pk/", (req, res) => {
   if (!req.session.userId) {
@@ -276,7 +317,11 @@ router.delete("/posts/:pk/", (req, res) => {
   const pk = req.params.pk;
   const post = db.prepare("SELECT * FROM myapp_post WHERE id = ?").get(pk);
   if (!post) return res.status(404).json({ detail: "존재하지 않는 글입니다." });
-  if (post.user !== req.session.username) {
+  // 본인 글이거나 관리자면 통과 (관리자는 남의 글도 삭제 가능)
+  const me = db
+    .prepare("SELECT is_admin FROM users WHERE id = ?")
+    .get(req.session.userId);
+  if (post.user !== req.session.username && !(me && me.is_admin)) {
     return res.status(403).json({ detail: "본인 글만 삭제할 수 있습니다." });
   }
 
@@ -293,7 +338,11 @@ router.put("/posts/:pk/", (req, res) => {
   const pk = req.params.pk;
   const post = db.prepare("SELECT * FROM myapp_post WHERE id = ?").get(pk);
   if (!post) return res.status(404).json({ detail: "존재하지 않는 글입니다." });
-  if (post.user !== req.session.username) {
+  // 본인 글이거나 관리자면 통과 (관리자는 남의 글도 수정 가능)
+  const me = db
+    .prepare("SELECT is_admin FROM users WHERE id = ?")
+    .get(req.session.userId);
+  if (post.user !== req.session.username && !(me && me.is_admin)) {
     return res.status(403).json({ detail: "본인 글만 수정할 수 있습니다." });
   }
 

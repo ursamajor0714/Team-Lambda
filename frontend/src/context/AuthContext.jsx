@@ -15,7 +15,12 @@ export function AuthProvider({ children }) {
       try {
         await api.ensureCsrf()
         const me = await api.me()
-        if (me.is_authenticated) setUser({ username: me.username })
+        if (me.is_authenticated)
+          setUser({
+            username: me.username,
+            is_admin: !!me.is_admin,
+            is_super: !!me.is_super,
+          })
       } catch (e) {
         console.error('초기 인증 조회 실패', e)
       } finally {
@@ -25,8 +30,14 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = async (username, password) => {
-    const res = await api.login(username, password)
-    setUser({ username: res.username })
+    await api.login(username, password)
+    // 로그인 응답엔 is_admin이 없으므로, me를 다시 불러 관리자/오너 여부까지 받아온다.
+    const me = await api.me()
+    setUser({
+      username: me.username,
+      is_admin: !!me.is_admin,
+      is_super: !!me.is_super,
+    })
   }
 
   const logout = async () => {
@@ -36,7 +47,7 @@ export function AuthProvider({ children }) {
 
   const register = async (username, password1, password2) => {
     const res = await api.register(username, password1, password2)
-    setUser({ username: res.username })
+    setUser({ username: res.username, is_admin: false, is_super: false })
   }
 
   return (

@@ -83,10 +83,39 @@ export const api = {
       method: "POST",
       body: { type },
     }),
+  commentDelete: (pk, cid) =>
+    request(`/api/posts/${pk}/comments/${cid}/`, { method: "DELETE" }),
 
   changePassword: (current_password, new_password, new_password2) =>
     request("/api/auth/change-password/", {
       method: "POST",
       body: { current_password, new_password, new_password2 },
+    }),
+
+  // ── 관리자 (관리자 계정만 호출 성공. 백엔드가 권한을 다시 검사한다) ──
+  adminUsers: () => request("/api/admin/users/"),
+  adminChangeUsername: (id, username) =>
+    request(`/api/admin/users/${id}/username/`, {
+      method: "POST",
+      body: { username },
+    }),
+  adminResetPassword: (id, new_password) =>
+    request(`/api/admin/users/${id}/reset-password/`, {
+      method: "POST",
+      body: { new_password },
+    }),
+  adminBan: (id, days) =>
+    request(`/api/admin/users/${id}/ban/`, {
+      method: "POST",
+      body: { days },
+    }),
+  adminUnban: (id) =>
+    request(`/api/admin/users/${id}/unban/`, { method: "POST" }),
+  adminDeleteUser: (id) =>
+    request(`/api/admin/users/${id}/`, { method: "DELETE" }),
+  adminSetRole: (id, is_admin) =>
+    request(`/api/admin/users/${id}/role/`, {
+      method: "POST",
+      body: { is_admin },
     }),
 };

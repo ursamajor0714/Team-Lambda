@@ -83,6 +83,18 @@ router.post("/auth/login/", (req, res) => {
       .json({ detail: "아이디 또는 비밀번호가 올바르지 않습니다." });
   }
 
+  // 정지 기간이 안 끝났으면 로그인 거부 (banned_until이 지금보다 미래면 정지중)
+  const banned = db
+    .prepare(
+      "SELECT banned_until FROM users WHERE id = ? AND banned_until > datetime('now','localtime')",
+    )
+    .get(user.id);
+  if (banned) {
+    return res
+      .status(403)
+      .json({ detail: `정지된 계정입니다. (${banned.banned_until}까지)` });
+  }
+
   // 세션에 저장 → 로그인 상태가 유지된다.
   req.session.userId = user.id;
   req.session.username = user.username;
@@ -99,7 +111,16 @@ router.post("/auth/logout/", (req, res) => {
 //    React가 새로고침될 때마다 "나 로그인 돼 있어?" 하고 물어보는 곳.
 router.get("/auth/me/", (req, res) => {
   if (req.session.userId) {
-    return res.json({ username: req.session.username, is_authenticated: true });
+    // 관리자 여부도 같이 내려줘서, 프론트가 관리자 메뉴를 보여줄지 결정할 수 있게 한다.
+    const u = db
+      .prepare("SELECT is_admin, is_super FROM users WHERE id = ?")
+      .get(req.session.userId);
+    return res.json({
+      username: req.session.username,
+      is_authenticated: true,
+      is_admin: !!(u && u.is_admin),
+      is_super: !!(u && u.is_super),
+    });
   }
   res.json({ is_authenticated: false });
 });
