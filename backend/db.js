@@ -79,6 +79,16 @@ db.exec(`
   )
 `);
 
+// 게시글 좋아요
+db.exec(`
+  CREATE TABLE IF NOT EXISTS myapp_post_like (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    username TEXT NOT NULL,
+    UNIQUE(post_id, username)
+  )
+`);
+
 // 댓글 좋아요/싫어요
 db.exec(`
   CREATE TABLE IF NOT EXISTS myapp_comment_like (
@@ -115,19 +125,19 @@ try {
 // 관리자 여부 (0 = 일반, 1 = 관리자)
 try {
   db.exec("ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0");
-} catch (e) {}
+} catch (e) { }
 
 // 정지 만료 일시 (NULL이면 정지 아님). 이 시각이 지나면 자동으로 정지가 풀린다.
 try {
   db.exec("ALTER TABLE users ADD COLUMN banned_until TEXT DEFAULT NULL");
-} catch (e) {}
+} catch (e) { }
 
 // 최고 관리자(오너) 여부 (0 = 일반, 1 = 오너).
 //   오너만 다른 사람에게 관리자 권한을 주고 뺏을 수 있다.
 //   오너 본인은 다른 관리자에게 정지/삭제/권한해제 당하지 않는다.
 try {
   db.exec("ALTER TABLE users ADD COLUMN is_super INTEGER NOT NULL DEFAULT 0");
-} catch (e) {}
+} catch (e) { }
 
 try {
   db.exec(`
@@ -136,26 +146,39 @@ try {
   `);
 } catch (e) { }
 
+// 방명록
+db.exec(`
+  CREATE TABLE IF NOT EXISTS guestbook (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    owner TEXT NOT NULL,
+    author TEXT NOT NULL,
+    content TEXT NOT NULL,
+    date TEXT NOT NULL
+  )
+`);
+
+try {
+  db.exec("ALTER TABLE myapp_post ADD COLUMN is_deleted INTEGER DEFAULT 0");
+} catch (e) {}
+
 // ─────────────────────────────────────────────────────────────
 // 오너(최고 관리자) 계정 자동 생성
-//   서버가 켜질 때 admin 계정이 없으면 자동으로 만들어준다.
-//   → 팀원 누가 클론해서 실행해도 항상 관리자 계정이 존재하게 된다.
-//   비밀번호는 .env 파일의 ADMIN_PASSWORD에서 읽는다 (깃허브에 안 올라감).
-//   사용법: .env.example을 복사해서 .env로 만들고, 팀 비밀번호를 넣으면 끝.
 // ─────────────────────────────────────────────────────────────
 const ownerExists = db
   .prepare("SELECT id FROM users WHERE username = ?")
   .get("admin");
+
 if (!ownerExists) {
   if (process.env.ADMIN_PASSWORD) {
     const hashed = bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10);
     db.prepare(
-      "INSERT INTO users (username, password, is_admin, is_super) VALUES (?, ?, 1, 1)",
+      "INSERT INTO users (username, password, is_admin, is_super) VALUES (?, ?, 1, 1)"
     ).run("admin", hashed);
+
     console.log("👑 오너 계정(admin)을 자동 생성했습니다.");
   } else {
     console.log(
-      "⚠️ ADMIN_PASSWORD가 없어 오너 계정을 만들지 못했습니다. .env.example을 .env로 복사하고 팀 비밀번호를 넣어주세요.",
+      "⚠️ ADMIN_PASSWORD가 없어 오너 계정을 만들지 못했습니다."
     );
   }
 }

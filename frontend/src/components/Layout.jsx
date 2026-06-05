@@ -46,7 +46,7 @@ export default function Layout() {
         <button className="btn" onClick={toggleDark}>{dark ? '🌞' : '🌙'}</button>
         {user ? (
           <>
-            <span>{user.username}님</span>
+            <Link to={`/user/${user.username}`} className="btn">{user.username}님</Link>
             {user.is_admin && (
               <Link to="/admin" className="btn">관리자</Link>
             )}

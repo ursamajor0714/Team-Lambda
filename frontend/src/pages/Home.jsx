@@ -99,7 +99,11 @@ export default function Home() {
                     <Link to={`/post/${p.id}`}>{p.title.length > 30 ? p.title.slice(0, 30) + '...' : p.title} ({p.comment_count})</Link>
                     {p.tag && p.tag !== '#기타' && <span style={{ fontSize: 11, color: '#2563eb', marginLeft: 4 }}>{p.tag}</span>}
                   </td>
-                  <td>{p.user}</td>
+                  <td><span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+    <img src="/default-avatar.svg" style={{ width: 20, height: 20, borderRadius: '50%' }} />
+    {p.user}
+  </span>
+</td>
                   <td>{p.views}</td>
                   <td>{p.likes}</td>
                   <td>{p.hates}</td>

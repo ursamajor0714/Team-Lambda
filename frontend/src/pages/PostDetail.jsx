@@ -104,7 +104,7 @@ const load = () => api.postDetail(pk).then(data => {
       alert(e.message)
     }
   }
-
+  const [showAnonAlert, setShowAnonAlert] = useState(false)
   // 이 댓글을 지울 수 있는 사람인가? (로그인했고, 본인 댓글이거나 관리자)
   const canDeleteComment = (c) =>
     user && (user.is_admin || user.username === c.user)
@@ -124,7 +124,21 @@ const load = () => api.postDetail(pk).then(data => {
   </div>
 )}
 
-
+{showAnonAlert && (
+  <div style={{
+    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+    background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center',
+    justifyContent: 'center', zIndex: 9999
+  }} onClick={() => setShowAnonAlert(false)}>
+    <div style={{
+      background: '#fff', padding: '24px 32px', borderRadius: 12,
+      textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+    }}>
+      <p style={{ marginBottom: 16 }}>비회원 게시글로 프로필 조회가 불가합니다.</p>
+      <button className="btn btn-primary" onClick={() => setShowAnonAlert(false)}>확인</button>
+    </div>
+  </div>
+)}
 
       {/* 1. 게시글 정보 */}
       <div className="post-header"><h2 style={{ textAlign: 'center' }}>{post.title}</h2>
@@ -133,8 +147,10 @@ const load = () => api.postDetail(pk).then(data => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#888', fontSize: 13, marginBottom: 16 }}>
       <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
   <img src="/default-avatar.svg" style={{ width: 24, height: 24, borderRadius: '50%' }} />
-  <Link to={`/user/${post.user}`}>{post.user}</Link>
-  · {new Date(post.date).toLocaleString()}
+  {post.user === '익명'
+  ? <span style={{ cursor: 'pointer' }} onClick={() => setShowAnonAlert(true)}>{post.user}</span>
+  : <Link to={`/user/${post.user}`}>{post.user}</Link>
+}{new Date(post.date).toLocaleString()}
 </span>
   <div style={{ display: 'flex', gap: 8 }}>
     <button className="btn" onClick={() => window.location.href=`/home?query=${post.user}&search_type=user`}>글검색</button>

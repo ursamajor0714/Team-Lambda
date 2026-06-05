@@ -169,4 +169,31 @@ router.post("/admin/users/:id/role/", requireSuper, (req, res) => {
   });
 });
 
+
+// ── 삭제된 글 목록 (GET /api/admin/deleted-posts/) ───────────────────
+router.get("/admin/deleted-posts/", (req, res) => {
+  const posts = db
+    .prepare(`
+      SELECT id, title, user, date
+      FROM myapp_post
+      WHERE is_deleted = 1
+      ORDER BY id DESC
+    `)
+    .all();
+  res.json({ posts });
+});
+
+// ── 삭제된 글 완전 삭제 (DELETE /api/admin/deleted-posts/:id/) ────────
+router.delete("/admin/deleted-posts/:id/", (req, res) => {
+  db.prepare("DELETE FROM myapp_comment WHERE post_id = ?").run(req.params.id);
+  db.prepare("DELETE FROM myapp_post WHERE id = ?").run(req.params.id);
+  res.json({ detail: "완전 삭제되었습니다." });
+});
+
+// ── 삭제된 글 복구 (POST /api/admin/deleted-posts/:id/restore/) ───────
+router.post("/admin/deleted-posts/:id/restore/", (req, res) => {
+  db.prepare("UPDATE myapp_post SET is_deleted = 0 WHERE id = ?").run(req.params.id);
+  res.json({ detail: "복구되었습니다." });
+});
+
 export default router;
