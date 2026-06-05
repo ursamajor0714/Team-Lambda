@@ -16,6 +16,9 @@ export default defineConfig({
       interval: 100,
     },
     host: true, // [Docker 추가] 0.0.0.0 바인딩 (컨테이너 밖에서 접속 가능)
+    // [터널 공유] Cloudflare Tunnel(trycloudflare.com) 경유 접속 허용
+    //   - Vite 5.4.12+ 는 모르는 Host 헤더를 403으로 차단하므로 명시 필요
+    allowedHosts: ['.trycloudflare.com'],
     proxy: {
       '/api': {
         target: process.env.VITE_API_PROXY || 'http://127.0.0.1:8000',
