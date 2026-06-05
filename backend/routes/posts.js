@@ -1,16 +1,3 @@
-// =============================================================================
-// routes/posts.js — 글 목록 / 상세 / 작성 / 좋아요 / 싫어요 / 댓글
-// -----------------------------------------------------------------------------
-// 📌 이 파일이 하는 일:
-//   글/댓글 관련 API들을 모았다. SQL로 직접 조회하고, 응답 모양(JSON)도 직접 만든다.
-//
-// 📌 better-sqlite3 사용법 복습:
-//   db.prepare(SQL).get(...)  → 한 줄 가져오기
-//   db.prepare(SQL).all(...)  → 여러 줄 가져오기 (배열)
-//   db.prepare(SQL).run(...)  → INSERT/UPDATE 처럼 바꾸기
-//   SQL 안의 '?' 는 값이 들어갈 자리 → SQL 인젝션 공격을 막는 안전한 방법이다.
-// =============================================================================
-
 import express from "express";
 import db from "../db.js";
 
@@ -189,17 +176,23 @@ router.get("/posts/:pk/", (req, res) => {
 });
 
 // ── 글 작성 (POST /api/posts/create/) ────────────────────────────────
+// backend/routes/posts.js
+
+// backend/routes/posts.js (글 작성 부분)
 router.post("/posts/create/", (req, res) => {
-  const { title, content, tag } = req.body;
-  if (!title || !content) {
-    return res.status(400).json({ detail: "제목과 내용을 모두 입력해주세요." });
-  }
-  const user = req.session.username || "익명";
+  const { title, content, tag, is_notice } = req.body;
+  const username = req.session.username || "익명";
+
+  // 백엔드 검증: 관리자가 아닌데 공지사항 등록을 시도할 경우 강제로 0 처리
+  const isAdmin = username === "admin";
+  const finalIsNotice = isAdmin && is_notice ? 1 : 0;
+
   const result = db
     .prepare(
-      "INSERT INTO myapp_post (title, content, user, date, views, likes, hates, tag) VALUES (?, ?, ?, datetime('now','localtime'), 0, 0, 0, ?)",
+      "INSERT INTO myapp_post (title, content, user, date, views, likes, hates, tag, is_notice) VALUES (?, ?, ?, datetime('now','localtime'), 0, 0, 0, ?, ?)",
     )
-    .run(title, content, user, tag || "#기타");
+    .run(title, content, user, tag || "#기타", finalIsNotice);
+
   res.status(201).json({ id: result.lastInsertRowid });
 });
 

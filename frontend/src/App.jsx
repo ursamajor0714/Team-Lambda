@@ -9,6 +9,7 @@ import Register from './pages/Register'
 import Write from './pages/Write'
 import Edit from './pages/Edit'
 import ChangePassword from './pages/ChangePassword'
+import Notice from './pages/Notice'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/post/:pk/edit" element={<Edit />} />
         <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/notice" element={<Notice />} />
       </Route>
     </Routes>
   )

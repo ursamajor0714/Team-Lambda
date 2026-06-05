@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import detailad from '../assets/rnscp.png'
+import detailad2 from '../assets/rnscp2.png'
+import detailad3 from '../assets/rnscp3.png'
 
 export default function PostDetail() {
   const { pk } = useParams()
@@ -13,6 +16,14 @@ export default function PostDetail() {
   const [replyInput, setReplyInput] = useState({})
 const [showReply, setShowReply] = useState({})
 const [bestId, setBestId] = useState(null)
+const [adIndex, setAdIndex] = useState(0);
+const ads = [detailad, detailad2, detailad3];
+useEffect(() => {
+  const timer = setInterval(() => {
+    setAdIndex((prev) => (prev + 1) % ads.length);
+  }, 3000); 
+  return () => clearInterval(timer); // 페이지 나갈 때 타이머 정지
+}, [ads.length]);
 
 const load = () => api.postDetail(pk).then(data => {
   setPost(data)
@@ -194,9 +205,23 @@ const load = () => api.postDetail(pk).then(data => {
       <button className="btn" onClick={() => navigate(`/post/${pk}/edit`)}>수정</button>
       <button className="btn" onClick={onDelete}>삭제</button>
     </>
-    
   )}
 </div>
+</div>
+<div style={{ marginTop: '30px', textAlign: 'center' }}>
+  <a href="https://cgv.co.kr/cnm/cgvChart/movieChart/30001046" target="_blank" rel="noreferrer">
+    <img 
+      src={ads[adIndex]} // 배열에서 현재 순서의 이미지를 꺼내옵니다
+      alt="광고" 
+      width="900" 
+      height="280" 
+      style={{ 
+        border: '1px solid #eee', 
+        borderRadius: 6, 
+        background: '#f5f5f5'
+      }} 
+    />
+  </a>
 </div>
     </article>
   )

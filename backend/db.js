@@ -37,6 +37,7 @@ db.exec(`
     likes INTEGER NOT NULL DEFAULT 0,
     hates INTEGER NOT NULL DEFAULT 0,
     tag TEXT DEFAULT '#기타'
+    is_notice INTEGER DEFAULT 0
   )
 `);
 
@@ -88,5 +89,12 @@ try {
 try {
   db.exec("ALTER TABLE myapp_post ADD COLUMN tag TEXT DEFAULT '#기타'");
 } catch (e) {}
+
+// ... 기존 try-catch 문들 아래에 추가
+try {
+  db.exec("ALTER TABLE myapp_post ADD COLUMN is_notice INTEGER DEFAULT 0");
+} catch (e) {
+  // 이미 컬럼이 있는 경우 에러가 나지만 무시합니다.
+}
 
 export default db;
