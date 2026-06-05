@@ -1,0 +1,31 @@
+{
+  "//": "[Docker 추가] Cursor/VS Code 가 '컨테이너 안에서 열기'를 가능하게 해주는 설정",
+  "//2": "팀원이 Cursor로 Lambda 폴더 열면 자동으로 'Reopen in Container' 알림이 뜸",
+  "name": "Lambda Dev",
+
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "backend",
+  "workspaceFolder": "/app",
+
+  "//3": "컨테이너 종료 시에도 다른 서비스(frontend)는 살려두기",
+  "shutdownAction": "stopCompose",
+
+  "//4": "팀원이 컨테이너 열 때 자동으로 설치될 Cursor/VS Code 확장",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "batisteo.vscode-django",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      }
+    }
+  },
+
+  "//5": "백엔드 8000, 프론트엔드 5173 포트 자동 포워딩",
+  "forwardPorts": [8000, 5173]
+}

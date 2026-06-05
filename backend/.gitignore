@@ -1,0 +1,2 @@
+# [Node 전환] Node 백엔드용 git 제외 목록
+node_modules/

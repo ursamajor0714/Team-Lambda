@@ -1,0 +1,28 @@
+# [Docker 추가] Django 백엔드용 이미지 정의
+# 팀원 누구든 같은 Python 3.12 환경에서 작업하도록 보장
+
+FROM python:3.12-slim
+
+# 파이썬 출력 버퍼링 비활성화 (로그 즉시 보이게)
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# psycopg2 등 일부 패키지 빌드용 시스템 라이브러리
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# requirements 먼저 복사해서 캐시 활용 (코드만 바뀌면 이 레이어는 재사용됨)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 나머지 코드 복사 (실제로는 docker-compose 볼륨 마운트가 덮어씀)
+COPY . .
+
+EXPOSE 8000
+
+# 0.0.0.0 으로 바인딩해야 컨테이너 외부(호스트)에서 접속 가능
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

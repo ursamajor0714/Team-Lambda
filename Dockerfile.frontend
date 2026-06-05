@@ -1,0 +1,18 @@
+# [Docker 추가] React(Vite) 프론트엔드용 이미지 정의
+# 팀원 누구든 같은 Node 20 환경에서 작업하도록 보장
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# package.json 먼저 복사해서 캐시 활용
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm install
+
+# 나머지 코드 복사 (실제로는 docker-compose 볼륨 마운트가 덮어씀)
+COPY frontend/ .
+
+EXPOSE 5173
+
+# --host 옵션으로 0.0.0.0 바인딩 (컨테이너 외부에서 접속 가능)
+CMD ["npm", "run", "dev", "--", "--host"]

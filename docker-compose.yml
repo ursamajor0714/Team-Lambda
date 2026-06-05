@@ -1,0 +1,46 @@
+# [Docker 추가] 백엔드 + 프론트엔드를 한 번에 띄우기 위한 설정
+# 팀원은 `docker compose up` 한 줄이면 끝.
+
+services:
+  # ─────────────────────────────────────────────────────────────
+  # [Node 전환] Node.js(Express) 백엔드 (포트 8000)
+  #   기존 Django(Python) 백엔드를 Node로 교체함.
+  # ─────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile # [Node 전환] Dockerfile.backend(Python) → backend/Dockerfile(Node)
+    container_name: lambda-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # 호스트의 코드를 컨테이너에 그대로 마운트 → 수정 시 자동 반영
+      - .:/app
+      # node_modules는 컨테이너 안의 것을 유지 (호스트와 안 섞이게)
+      - /app/backend/node_modules
+    environment:
+      # [Node 전환] 세션 서명용 비밀키 (Django의 SECRET_KEY 역할)
+      - SESSION_SECRET=dev-secret-key-change-in-production
+    # [Node 전환] python manage.py migrate/runserver → npm 의존성 설치 후 Node 서버 실행
+    command: sh -c "cd /app/backend && npm install && npm run dev"
+
+  # ─────────────────────────────────────────────────────────────
+  # React 프론트엔드 (포트 5173)
+  # ─────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: lambda-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      # 호스트의 frontend 코드를 컨테이너에 마운트
+      - ./frontend:/app
+      # node_modules는 컨테이너 안의 것을 그대로 유지 (호스트에 안 새도록)
+      - /app/node_modules
+    environment:
+      # Vite가 백엔드 컨테이너로 프록시할 주소 (Docker 네트워크 내부 이름 사용)
+      - VITE_API_PROXY=http://backend:8000
+    depends_on:
+      - backend
