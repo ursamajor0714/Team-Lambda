@@ -60,12 +60,12 @@ export const api = {
   // 글
   postList: (params) => request("/api/posts/", { params }),
   postDetail: (pk) => request(`/api/posts/${pk}/`),
-  postCreate: (title, content, tag) =>
+  postCreate: (title, content, tag, is_notice) =>
     request("/api/posts/create/", {
       method: "POST",
       body: { title, content, tag },
     }),
-  postUpdate: (pk, title, content, tag) =>
+  postUpdate: (pk, title, content, tag, is_notice) =>
     request(`/api/posts/${pk}/`, {
       method: "PUT",
       body: { title, content, tag },

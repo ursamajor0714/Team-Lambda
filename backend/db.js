@@ -37,6 +37,7 @@ db.exec(`
     likes INTEGER NOT NULL DEFAULT 0,
     hates INTEGER NOT NULL DEFAULT 0,
     tag TEXT DEFAULT '#기타'
+    is_notice INTEGER DEFAULT 0
   )
 `);
 

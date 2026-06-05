@@ -20,7 +20,7 @@ a:hover {
   text-decoration: underline;
 }
 .container {
-  max-width: 900px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 16px;
 }
@@ -187,4 +187,71 @@ body.dark .post-header,
 body.dark .post-comments,
 body.dark .post-footer {
   border-color: #3f3f46;
+}
+
+.container-with-margin {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+/* index.css */
+.sticky-sidebar {
+  position: sticky;
+  top: 20px;
+  width: 200px;
+  flex-shrink: 0;
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 16px;
+  height: fit-content;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* 은은한 그림자 */
+  border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  text-decoration: none;
+  color: #4b5563; /* 세련된 그레이 */
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.sidebar-link:hover {
+  background-color: #f3f4f6; /* 호버 시 연한 그레이 */
+  color: #2563eb; /* 호버 시 포인트 컬러(블루) */
+  transform: translateX(4px); /* 살짝 오른쪽으로 이동하는 효과 */
+}
+
+.sidebar-divider {
+  height: 1px;
+  background-color: #f1f1f1;
+  margin: 12px 8px;
+  border: none;
+}
+
+/* 다크모드 대응 */
+body.dark .sticky-sidebar {
+  background: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+body.dark .sidebar-link {
+  color: #d1d5db;
+}
+body.dark .sidebar-link:hover {
+  background-color: #374151;
+  color: #60a5fa;
 }
