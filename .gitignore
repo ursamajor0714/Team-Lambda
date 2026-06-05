@@ -1,6 +1,6 @@
-venv/
-__pycache__/
-*.pyc
+node_modules/
 db.sqlite3
 .env
-staticfiles/
+dist/
+build/
+npm-debug.log*

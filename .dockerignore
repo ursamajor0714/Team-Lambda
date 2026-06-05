@@ -1,14 +1,5 @@
 # [Docker 추가] 컨테이너 빌드 시 제외할 파일/폴더
 
-# Python
-__pycache__
-*.pyc
-*.pyo
-*.pyd
-.venv
-venv
-env
-
 # Node
 node_modules
 npm-debug.log
@@ -31,7 +22,6 @@ docker-compose*.yml
 # 빌드 산출물
 dist
 build
-staticfiles
 
 # 기타
 .env

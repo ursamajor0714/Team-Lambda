@@ -3,14 +3,13 @@
 
 services:
   # ─────────────────────────────────────────────────────────────
-  # [Node 전환] Node.js(Express) 백엔드 (포트 8000)
-  #   기존 Django(Python) 백엔드를 Node로 교체함.
+  # Node.js(Express) 백엔드 (포트 8000)
   # ─────────────────────────────────────────────────────────────
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile # [Node 전환] Dockerfile.backend(Python) → backend/Dockerfile(Node)
-    container_name: lambda-backend
+      dockerfile: backend/Dockerfile
+    container_name: new-lambda-backend
     ports:
       - "8000:8000"
     volumes:
@@ -19,9 +18,9 @@ services:
       # node_modules는 컨테이너 안의 것을 유지 (호스트와 안 섞이게)
       - /app/backend/node_modules
     environment:
-      # [Node 전환] 세션 서명용 비밀키 (Django의 SECRET_KEY 역할)
+      # 세션 서명용 비밀키
       - SESSION_SECRET=dev-secret-key-change-in-production
-    # [Node 전환] python manage.py migrate/runserver → npm 의존성 설치 후 Node 서버 실행
+    # npm 의존성 설치 후 Node 서버 실행
     command: sh -c "cd /app/backend && npm install && npm run dev"
 
   # ─────────────────────────────────────────────────────────────
@@ -31,7 +30,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    container_name: lambda-frontend
+    container_name: new-lambda-frontend
     ports:
       - "5173:5173"
     volumes:

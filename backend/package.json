@@ -1,12 +1,12 @@
 {
   "name": "lambda-backend-node",
   "version": "1.0.0",
-  "_comment": "[Node 전환] Django를 대체하는 Node.js 백엔드. `npm install` 후 `npm run dev`로 8000 포트에서 실행됨.",
+  "_comment": "Node.js(Express) 백엔드. `npm install` 후 `npm run dev`로 8000 포트에서 실행됨.",
   "type": "module",
   "_comment_type": "type:module → import/export(ES Module) 문법을 쓰겠다는 선언. 없으면 require() 방식이 됨.",
   "scripts": {
     "dev": "node --watch server.js",
-    "_comment_dev": "--watch: 파일이 바뀌면 서버 자동 재시작. Django runserver의 hot reload와 같은 역할.",
+    "_comment_dev": "--watch: 파일이 바뀌면 서버 자동 재시작 (hot reload).",
     "start": "node server.js"
   },
   "dependencies": {
@@ -18,11 +18,11 @@
     "bcryptjs": "^2.4.3"
   },
   "_comment_deps": {
-    "express": "웹 서버 프레임워크 — Django 자리",
-    "better-sqlite3": "SQLite DB를 직접 SQL로 다루는 도구 — Django ORM 자리",
-    "express-session": "로그인 세션 유지 — Django 세션 자리",
+    "express": "웹 서버 프레임워크",
+    "better-sqlite3": "SQLite DB를 직접 SQL로 다루는 도구",
+    "express-session": "로그인 세션 유지",
     "cookie-parser": "쿠키를 읽기 쉽게 해줌 — CSRF 토큰 비교에 필요",
-    "cors": "다른 주소(5173 React)의 요청 허용 — Django corsheaders 자리",
-    "bcryptjs": "비밀번호 암호화/비교 — Django 비번 해싱 자리"
+    "cors": "다른 주소(5173 React)의 요청 허용",
+    "bcryptjs": "비밀번호 암호화/비교"
   }
 }

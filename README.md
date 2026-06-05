@@ -11,7 +11,7 @@ Our goal is to make a simple and easy-to-visit community!
 
 ## 🛠 기술 스택
 
-익명 게시판 프로젝트 (Django REST + React + Docker)
+익명 게시판 프로젝트 (Node.js(Express) REST + React + Docker)
 
 ---
 
@@ -36,7 +36,6 @@ docker compose up
 다 뜨면:
 - 프론트엔드: <http://localhost:5173>
 - 백엔드 API: <http://localhost:8000/api/posts/>
-- Django admin: <http://localhost:8000/admin/>
 
 종료는 `Ctrl+C` → `docker compose down`.
 
@@ -51,7 +50,7 @@ docker compose down
 rm db.sqlite3
 docker compose up
 ```
-(첫 실행 때 마이그레이션이 자동으로 돌면서 새 DB가 생깁니다)
+(첫 실행 때 Node 백엔드가 필요한 테이블을 자동으로 만들면서 새 DB가 생깁니다)
 
 ---
 
@@ -72,12 +71,13 @@ Cursor가 컨테이너 환경 그대로 들고 들어가서, 자동완성·타�
 
 ```
 Lambda/
-├── config/              ← Django 프로젝트 설정
-├── myapp/               ← Django 앱 (모델/뷰/시리얼라이저)
-│   ├── models.py
-│   ├── views.py         ← JSON API
-│   ├── serializers.py
-│   └── urls.py
+├── backend/             ← Node.js (Express) 백엔드
+│   ├── server.js        ← 시작점 (서버/미들웨어/라우트 연결)
+│   ├── db.js            ← SQLite 연결 + 테이블 생성
+│   ├── routes/          ← API 핸들러 (auth.js, posts.js)
+│   ├── middleware/      ← CSRF 등 공통 처리
+│   ├── package.json
+│   └── Dockerfile       ← Node 20 환경 (백엔드)
 ├── frontend/            ← React (Vite)
 │   ├── package.json
 │   └── src/
@@ -86,45 +86,31 @@ Lambda/
 │       ├── context/     ← 인증 컨텍스트
 │       └── components/  ← 공통 레이아웃
 ├── .devcontainer/       ← Cursor용 컨테이너 설정
-├── Dockerfile.backend   ← Python 3.12 환경
-├── Dockerfile.frontend  ← Node 20 환경
-├── docker-compose.yml   ← 둘 한 번에 띄우기
-├── requirements.txt
-└── manage.py
+├── Dockerfile.frontend  ← Node 20 환경 (프론트엔드)
+└── docker-compose.yml   ← 둘 한 번에 띄우기
 ```
 
 ---
 
 ## 🐳 Docker 없이 직접 띄우기 (선택)
 
-Docker 안 쓰고 싶을 때 (Python 3.12 / Node 20 직접 설치 필요):
+Docker 안 쓰고 싶을 때 (Node 20 직접 설치 필요):
 
 ```bash
-# 터미널 1: Django
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
+# 터미널 1: Node 백엔드 (8000)
+cd backend
+npm install
+npm run dev
 
-# 터미널 2: React
+# 터미널 2: React (5173)
 cd frontend
 npm install
 npm run dev
 ```
 
----
-
-## 🔍 변경된 부분(공부용)
-
-Django 풀스택 → REST API + React로 전환한 흔적이 코드에 주석으로 남아있습니다:
-
-```bash
-# 백엔드/프론트엔드의 React 전환 표시 찾기
-grep -rn "React 전환" . --include="*.py" --include="*.js" --include="*.jsx"
-
-# Docker 추가 표시 찾기
-grep -rn "Docker 추가" . --include="*.py" --include="*.js" --include="*.jsx" \
-  --include="Dockerfile*" --include="*.yml" --include="*.json"
-```
+> 참고: 백엔드 의존성 중 `better-sqlite3`는 네이티브 모듈이라, 직접 설치 시
+> OS에 빌드 도구(Windows는 Visual Studio C++ Build Tools)가 필요할 수 있습니다.
+> 그래서 위 Docker 방식(`docker compose up`)을 권장합니다.
 
 ---
 

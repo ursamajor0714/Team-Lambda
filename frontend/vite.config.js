@@ -1,6 +1,6 @@
 // [React 전환] Vite 설정.
-//   - server.proxy: 개발 중 /api 요청을 Django(8000번)로 자동 전달
-//     → React는 5173, Django는 8000 으로 따로 떠 있지만 코드에서는 그냥 fetch('/api/posts/') 만 쓰면 됨
+//   - server.proxy: 개발 중 /api 요청을 Node 백엔드(8000번)로 자동 전달
+//     → React는 5173, Node 백엔드는 8000 으로 따로 떠 있지만 코드에서는 그냥 fetch('/api/posts/') 만 쓰면 됨
 // [Docker 추가] host: true / 환경변수 기반 proxy target 추가
 //   - Docker로 띄울 땐 VITE_API_PROXY=http://backend:8000 (compose가 자동 주입)
 //   - 호스트에서 npm run dev 할 땐 기본값 127.0.0.1:8000 사용

@@ -1,10 +1,8 @@
 // =============================================================================
-// [Node 전환] routes/posts.js — 글 목록 / 상세 / 작성 / 좋아요 / 싫어요 / 댓글
+// routes/posts.js — 글 목록 / 상세 / 작성 / 좋아요 / 싫어요 / 댓글
 // -----------------------------------------------------------------------------
-// 📌 Django와 비교:
-//   원래 myapp/views.py 의 post_list, post_detail, post_create, like_post,
-//   hate_post, comment_create 함수들 + serializers.py 의 응답 가공을 합친 것이다.
-//   여기선 SQL로 직접 조회하고, 응답 모양(JSON)도 직접 만든다.
+// 📌 이 파일이 하는 일:
+//   글/댓글 관련 API들을 모았다. SQL로 직접 조회하고, 응답 모양(JSON)도 직접 만든다.
 //
 // 📌 better-sqlite3 사용법 복습:
 //   db.prepare(SQL).get(...)  → 한 줄 가져오기
@@ -21,7 +19,7 @@ const router = express.Router();
 // ── 글 목록 (GET /api/posts/) ────────────────────────────────────────
 router.get("/posts/", (req, res) => {
   const PAGE_SIZE = parseInt(req.query.page_size || "20", 10);
-  // 쿼리스트링(?query=...&page=...) 값 꺼내기 — Django의 request.GET.get(...)
+  // 쿼리스트링(?query=...&page=...) 값 꺼내기
   const query = req.query.query || "";
   const searchType = req.query.search_type || "title";
   const searchPeriod = req.query.search_period || "all";
@@ -39,7 +37,7 @@ router.get("/posts/", (req, res) => {
   }
 
   if (query) {
-    // LIKE '%단어%' 는 "그 단어가 포함된" 검색 (Django의 __icontains 역할)
+    // LIKE '%단어%' 는 "그 단어가 포함된" 검색
     if (searchType === "title") {
       where.push("title LIKE ?");
       params.push(`%${query}%`);
@@ -67,12 +65,12 @@ router.get("/posts/", (req, res) => {
 
   const whereSql = where.length ? "WHERE " + where.join(" AND ") : "";
 
-  // 전체 개수 (페이지네이션 계산용) — Django의 posts.count()
+  // 전체 개수 (페이지네이션 계산용)
   const total = db
     .prepare(`SELECT COUNT(*) AS cnt FROM myapp_post ${whereSql}`)
     .get(...params).cnt;
 
-  // 실제 목록 — 댓글 수(comment_count)를 서브쿼리로 같이 구한다 (Django annotate(Count('comment')) 역할).
+  // 실제 목록 — 댓글 수(comment_count)를 서브쿼리로 같이 구한다.
   //   ORDER BY id DESC → 최신글이 위로.  LIMIT/OFFSET → 페이지 나누기.
   const offset = (page - 1) * PAGE_SIZE;
   const posts = db
@@ -88,7 +86,7 @@ router.get("/posts/", (req, res) => {
     )
     .all(...params, PAGE_SIZE, offset);
 
-  // 상단 통계 — Django가 home 화면에 내려주던 값들.
+  // 상단 통계 — 홈 화면에 내려주는 값들.
   const todayPosts = db
     .prepare(
       "SELECT COUNT(*) AS c FROM myapp_post WHERE DATE(date)=DATE('now','localtime')",
@@ -105,14 +103,14 @@ router.get("/posts/", (req, res) => {
     )
     .get().c;
 
-  // 방문자 기록 — 오늘 이 IP가 처음이면 기록한다 (Django home 뷰의 방문자 로직).
+  // 방문자 기록 — 오늘 이 IP가 처음이면 기록한다.
   if (!req.session.visited) {
     req.session.visited = true;
     db.prepare(
       "INSERT INTO myapp_visitor (ip, date) VALUES (?, DATE('now','localtime'))",
     ).run(req.sessionID);
   }
-  // 응답 모양은 Django views.post_list 의 Response({...})와 똑같이 맞춰야 프론트가 동작한다.
+  // 응답 모양은 프론트가 기대하는 형태와 똑같이 맞춰야 화면이 동작한다.
   res.json({
     posts,
     page,
@@ -211,7 +209,7 @@ router.post("/posts/:pk/like/", (req, res) => {
   const post = db.prepare("SELECT * FROM myapp_post WHERE id = ?").get(pk);
   if (!post) return res.status(404).json({ detail: "존재하지 않는 글입니다." });
 
-  // 세션으로 중복 방지 — 한 번 누른 사람은 또 못 누른다 (Django의 session_key 로직과 동일).
+  // 세션으로 중복 방지 — 한 번 누른 사람은 또 못 누른다.
   const key = `liked_${pk}`;
   if (!req.session[key]) {
     db.prepare("UPDATE myapp_post SET likes = likes + 1 WHERE id = ?").run(pk);
@@ -223,7 +221,7 @@ router.post("/posts/:pk/like/", (req, res) => {
 
 // ── 싫어요 (POST /api/posts/:pk/hate/) — 로그인 필요 ──────────────────
 router.post("/posts/:pk/hate/", (req, res) => {
-  // Django의 @permission_classes([IsAuthenticated]) 역할 — 로그인 안 했으면 거절.
+  // 로그인 안 했으면 거절한다.
   if (!req.session.userId) {
     return res.status(403).json({ detail: "로그인이 필요합니다." });
   }
@@ -257,7 +255,7 @@ router.post("/posts/:pk/comments/", (req, res) => {
     )
     .run(content, user, pk, parent_id || null);
 
-  // Django CommentSerializer 와 같은 모양으로 응답한다.
+  // 프론트가 기대하는 댓글 모양으로 응답한다.
   const created = db
     .prepare("SELECT date FROM myapp_comment WHERE id = ?")
     .get(result.lastInsertRowid);

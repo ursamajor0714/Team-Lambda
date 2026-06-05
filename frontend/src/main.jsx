@@ -1,4 +1,4 @@
-// [React 전환] React 앱 진입점. 기존 Django의 urls.py + base.html 역할의 시작점.
+// React 앱 진입점.
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'

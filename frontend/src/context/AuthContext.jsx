@@ -1,6 +1,5 @@
-// [React 전환] 로그인 상태를 앱 전체에서 공유하기 위한 Context.
-//   기존 Django 템플릿에선 {{ user.is_authenticated }} 한 줄로 됐지만,
-//   React에선 한번 로그인 정보를 받아서 컨텍스트에 들고 다녀야 함.
+// 로그인 상태를 앱 전체에서 공유하기 위한 Context.
+//   한번 로그인 정보를 받아서 컨텍스트에 들고 다닌다.
 import { createContext, useContext, useEffect, useState } from 'react'
 import { api } from '../api/client'
 

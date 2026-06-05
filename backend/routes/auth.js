@@ -1,16 +1,15 @@
 // =============================================================================
-// [Node 전환] routes/auth.js — 회원가입 / 로그인 / 로그아웃 / 내 정보 / CSRF
+// routes/auth.js — 회원가입 / 로그인 / 로그아웃 / 내 정보 / CSRF
 // -----------------------------------------------------------------------------
-// 📌 Django와 비교:
-//   원래 myapp/views.py 의 register, login_view, logout_view, me, csrf 함수들이다.
-//   Express에서는 "라우터(Router)"에 주소별 처리 함수를 등록한다.
+// 📌 이 파일이 하는 일:
+//   Express "라우터(Router)"에 인증 관련 주소별 처리 함수를 등록한다.
 //
 // 📌 JS 문법 메모:
 //   - express.Router() : 주소 묶음을 만드는 도구. server.js에서 '/api'에 연결된다.
 //   - router.post('/auth/login/', (req, res) => { ... }) :
 //       "POST 방식으로 /api/auth/login/ 이 들어오면 이 함수를 실행해라" 라는 뜻.
 //   - req = 요청(들어온 것),  res = 응답(돌려줄 것)
-//   - (req, res) => { ... } 는 "화살표 함수" — Python의 def 대신 쓰는 함수 표현.
+//   - (req, res) => { ... } 는 "화살표 함수".
 // =============================================================================
 
 import express from "express";
@@ -21,7 +20,7 @@ import { issueCsrfToken } from "../middleware/csrf.js";
 const router = express.Router();
 
 // ── CSRF 토큰 발급 (GET /api/csrf/) ──────────────────────────────────
-//    Django: views.csrf. React가 첫 진입 때 1회 호출한다.
+//    React가 첫 진입 때 1회 호출한다.
 router.get("/csrf/", issueCsrfToken);
 
 // ── 회원가입 (POST /api/auth/register/) ──────────────────────────────
@@ -31,7 +30,7 @@ router.post("/auth/register/", (req, res) => {
   const password1 = req.body.password1 || "";
   const password2 = req.body.password2 || "";
 
-  // 검증 — Django views.register 의 규칙을 그대로 옮겼다.
+  // 입력값 검증
   if (username.length > 13) {
     return res
       .status(400)
@@ -62,7 +61,7 @@ router.post("/auth/register/", (req, res) => {
     .prepare("INSERT INTO users (username, password) VALUES (?, ?)")
     .run(username, hashed);
 
-  // 가입 후 자동 로그인 (Django와 동일) — 세션에 사용자 정보를 저장한다.
+  // 가입 후 자동 로그인 — 세션에 사용자 정보를 저장한다.
   req.session.userId = result.lastInsertRowid; // 방금 INSERT된 행의 id
   req.session.username = username;
 
