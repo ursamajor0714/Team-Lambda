@@ -1,9 +1,26 @@
 import Database from "better-sqlite3";
 import path from "path";
+import fs from "fs";
+import bcrypt from "bcryptjs";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// ─────────────────────────────────────────────────────────────
+// .env 파일 읽기 (dotenv 패키지 없이 직접 구현)
+//   프로젝트 루트의 .env 파일을 읽어 process.env에 채운다.
+//   .env는 .gitignore에 있어서 깃허브에 올라가지 않는다 → 비밀번호 보관용.
+//   파일이 없으면 그냥 넘어간다 (에러 안 남).
+// ─────────────────────────────────────────────────────────────
+const ENV_PATH = path.join(__dirname, "..", ".env");
+if (fs.existsSync(ENV_PATH)) {
+  for (const line of fs.readFileSync(ENV_PATH, "utf8").split("\n")) {
+    // "KEY=값" 형태의 줄만 골라낸다 (#으로 시작하는 주석은 무시됨)
+    const m = line.match(/^\s*([\w.]+)\s*=\s*(.*?)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+  }
+}
 
 const DB_PATH =
   process.env.DATABASE_FILE || path.join(__dirname, "..", "db.sqlite3");
@@ -117,5 +134,29 @@ try {
     ALTER TABLE users
     ADD COLUMN avatar TEXT DEFAULT '/default-avatar.png'
   `);
-} catch (e) {}
+} catch (e) { }
+
+// ─────────────────────────────────────────────────────────────
+// 오너(최고 관리자) 계정 자동 생성
+//   서버가 켜질 때 admin 계정이 없으면 자동으로 만들어준다.
+//   → 팀원 누가 클론해서 실행해도 항상 관리자 계정이 존재하게 된다.
+//   비밀번호는 .env 파일의 ADMIN_PASSWORD에서 읽는다 (깃허브에 안 올라감).
+//   사용법: .env.example을 복사해서 .env로 만들고, 팀 비밀번호를 넣으면 끝.
+// ─────────────────────────────────────────────────────────────
+const ownerExists = db
+  .prepare("SELECT id FROM users WHERE username = ?")
+  .get("admin");
+if (!ownerExists) {
+  if (process.env.ADMIN_PASSWORD) {
+    const hashed = bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10);
+    db.prepare(
+      "INSERT INTO users (username, password, is_admin, is_super) VALUES (?, ?, 1, 1)",
+    ).run("admin", hashed);
+    console.log("👑 오너 계정(admin)을 자동 생성했습니다.");
+  } else {
+    console.log(
+      "⚠️ ADMIN_PASSWORD가 없어 오너 계정을 만들지 못했습니다. .env.example을 .env로 복사하고 팀 비밀번호를 넣어주세요.",
+    );
+  }
+}
 export default db;
