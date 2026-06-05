@@ -131,7 +131,11 @@ const load = () => api.postDetail(pk).then(data => {
 
       {/* 2. 유저 정보 (좋아요/싫어요 버튼 포함) - 기존엔 아래쪽에 있던 버튼을 여기로 이동 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#888', fontSize: 13, marginBottom: 16 }}>
-  <span><Link to={`/user/${post.user}`}>{post.user}</Link> · {new Date(post.date).toLocaleString()}</span>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+  <img src="/default-avatar.svg" style={{ width: 24, height: 24, borderRadius: '50%' }} />
+  <Link to={`/user/${post.user}`}>{post.user}</Link>
+  · {new Date(post.date).toLocaleString()}
+</span>
   <div style={{ display: 'flex', gap: 8 }}>
     <button className="btn" onClick={() => window.location.href=`/home?query=${post.user}&search_type=user`}>글검색</button>
     <button className="btn" onClick={onShare}>공유</button>

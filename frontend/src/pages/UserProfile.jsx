@@ -19,7 +19,7 @@ export default function UserProfile() {
       {/* 헤더 */}
       <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
         <img
-          src={data.avatar || '/default-avatar.png'}
+          src={data.avatar || '/default-avatar.svg'}
           style={{
             width: 80,
             height: 80,

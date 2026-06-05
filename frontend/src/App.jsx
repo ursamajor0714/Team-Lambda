@@ -8,6 +8,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Write from './pages/Write'
 import Edit from './pages/Edit'
+import UserProfile from './pages/UserProfile'
 import ChangePassword from './pages/ChangePassword'
 import Admin from './pages/Admin'
 
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/post/:pk/edit" element={<Edit />} />
         <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/user/:username" element={<UserProfile />} />
         <Route path="/admin" element={<Admin />} />
       </Route>
     </Routes>
