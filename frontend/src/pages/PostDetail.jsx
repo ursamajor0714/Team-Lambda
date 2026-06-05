@@ -150,7 +150,7 @@ const load = () => api.postDetail(pk).then(data => {
   {post.user === '익명'
   ? <span style={{ cursor: 'pointer' }} onClick={() => setShowAnonAlert(true)}>{post.user}</span>
   : <Link to={`/user/${post.user}`}>{post.user}</Link>
-}
+}{new Date(post.date).toLocaleString()}
 </span>
   <div style={{ display: 'flex', gap: 8 }}>
     <button className="btn" onClick={() => window.location.href=`/home?query=${post.user}&search_type=user`}>글검색</button>

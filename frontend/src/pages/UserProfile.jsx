@@ -111,6 +111,7 @@ export default function UserProfile() {
       {/* 탭 버튼 */}
       <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
         <button className="btn" onClick={() => setTab('posts')}>작성글</button>
+        <button className="btn" onClick={() => setTab('likes')}>좋아요</button>
         <button className="btn" onClick={() => setTab('comments')}>댓글</button>
         <button className="btn" onClick={() => setTab('guest')}>방명록</button>
       </div>
@@ -131,6 +132,7 @@ export default function UserProfile() {
 
         {tab === 'comments' && <CommentTab username={username} />}
         {tab === 'guest' && <GuestbookTab username={username} />}
+        {tab === 'likes' && <CommentTab username={username} />}
 
       </div>
     </div>

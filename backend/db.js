@@ -62,6 +62,16 @@ db.exec(`
   )
 `);
 
+// 게시글 좋아요
+db.exec(`
+  CREATE TABLE IF NOT EXISTS myapp_post_like (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    username TEXT NOT NULL,
+    UNIQUE(post_id, username)
+  )
+`);
+
 // 댓글 좋아요/싫어요
 db.exec(`
   CREATE TABLE IF NOT EXISTS myapp_comment_like (
