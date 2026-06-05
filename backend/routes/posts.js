@@ -20,6 +20,10 @@ router.get("/posts/", (req, res) => {
     params.push(tag);
   }
 
+  if (req.query.is_notice === "true") {
+    where.push("p.is_notice = 1");
+  }
+
   if (query) {
     if (searchType === "title") {
       where.push("p.title LIKE ?");
