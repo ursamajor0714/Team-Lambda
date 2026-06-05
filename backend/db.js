@@ -1,9 +1,26 @@
 import Database from "better-sqlite3";
 import path from "path";
+import fs from "fs";
+import bcrypt from "bcryptjs";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// ─────────────────────────────────────────────────────────────
+// .env 파일 읽기 (dotenv 패키지 없이 직접 구현)
+//   프로젝트 루트의 .env 파일을 읽어 process.env에 채운다.
+//   .env는 .gitignore에 있어서 깃허브에 올라가지 않는다 → 비밀번호 보관용.
+//   파일이 없으면 그냥 넘어간다 (에러 안 남).
+// ─────────────────────────────────────────────────────────────
+const ENV_PATH = path.join(__dirname, "..", ".env");
+if (fs.existsSync(ENV_PATH)) {
+  for (const line of fs.readFileSync(ENV_PATH, "utf8").split("\n")) {
+    // "KEY=값" 형태의 줄만 골라낸다 (#으로 시작하는 주석은 무시됨)
+    const m = line.match(/^\s*([\w.]+)\s*=\s*(.*?)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+  }
+}
 
 const DB_PATH =
   process.env.DATABASE_FILE || path.join(__dirname, "..", "db.sqlite3");
@@ -62,6 +79,16 @@ db.exec(`
   )
 `);
 
+// 게시글 좋아요
+db.exec(`
+  CREATE TABLE IF NOT EXISTS myapp_post_like (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    username TEXT NOT NULL,
+    UNIQUE(post_id, username)
+  )
+`);
+
 // 댓글 좋아요/싫어요
 db.exec(`
   CREATE TABLE IF NOT EXISTS myapp_comment_like (
@@ -98,24 +125,61 @@ try {
 // 관리자 여부 (0 = 일반, 1 = 관리자)
 try {
   db.exec("ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0");
-} catch (e) {}
+} catch (e) { }
 
 // 정지 만료 일시 (NULL이면 정지 아님). 이 시각이 지나면 자동으로 정지가 풀린다.
 try {
   db.exec("ALTER TABLE users ADD COLUMN banned_until TEXT DEFAULT NULL");
-} catch (e) {}
+} catch (e) { }
 
 // 최고 관리자(오너) 여부 (0 = 일반, 1 = 오너).
 //   오너만 다른 사람에게 관리자 권한을 주고 뺏을 수 있다.
 //   오너 본인은 다른 관리자에게 정지/삭제/권한해제 당하지 않는다.
 try {
   db.exec("ALTER TABLE users ADD COLUMN is_super INTEGER NOT NULL DEFAULT 0");
-} catch (e) {}
+} catch (e) { }
 
 try {
   db.exec(`
     ALTER TABLE users
     ADD COLUMN avatar TEXT DEFAULT '/default-avatar.png'
   `);
+} catch (e) { }
+
+// 방명록
+db.exec(`
+  CREATE TABLE IF NOT EXISTS guestbook (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    owner TEXT NOT NULL,
+    author TEXT NOT NULL,
+    content TEXT NOT NULL,
+    date TEXT NOT NULL
+  )
+`);
+
+try {
+  db.exec("ALTER TABLE myapp_post ADD COLUMN is_deleted INTEGER DEFAULT 0");
 } catch (e) {}
+
+// ─────────────────────────────────────────────────────────────
+// 오너(최고 관리자) 계정 자동 생성
+// ─────────────────────────────────────────────────────────────
+const ownerExists = db
+  .prepare("SELECT id FROM users WHERE username = ?")
+  .get("admin");
+
+if (!ownerExists) {
+  if (process.env.ADMIN_PASSWORD) {
+    const hashed = bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10);
+    db.prepare(
+      "INSERT INTO users (username, password, is_admin, is_super) VALUES (?, ?, 1, 1)"
+    ).run("admin", hashed);
+
+    console.log("👑 오너 계정(admin)을 자동 생성했습니다.");
+  } else {
+    console.log(
+      "⚠️ ADMIN_PASSWORD가 없어 오너 계정을 만들지 못했습니다."
+    );
+  }
+}
 export default db;

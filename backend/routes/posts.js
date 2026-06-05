@@ -48,7 +48,8 @@ router.get("/posts/", (req, res) => {
     where.push("DATE(p.date) >= DATE('now','localtime','-30 day')");
   }
 
-  const whereSql = where.length ? "WHERE " + where.join(" AND ") : "";
+  where.push("p.is_deleted = 0")
+  const whereSql = "WHERE " + where.join(" AND ");
 
   const total = db
     .prepare(`SELECT COUNT(*) AS cnt FROM myapp_post p ${whereSql}`)
@@ -323,8 +324,7 @@ router.delete("/posts/:pk/", (req, res) => {
     return res.status(403).json({ detail: "본인 글만 삭제할 수 있습니다." });
   }
 
-  db.prepare("DELETE FROM myapp_comment WHERE post_id = ?").run(pk);
-  db.prepare("DELETE FROM myapp_post WHERE id = ?").run(pk);
+  db.prepare("UPDATE myapp_post SET is_deleted = 1 WHERE id = ?").run(pk);
   res.json({ detail: "삭제되었습니다." });
 });
 
