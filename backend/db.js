@@ -98,19 +98,19 @@ try {
 // 관리자 여부 (0 = 일반, 1 = 관리자)
 try {
   db.exec("ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0");
-} catch (e) {}
+} catch (e) { }
 
 // 정지 만료 일시 (NULL이면 정지 아님). 이 시각이 지나면 자동으로 정지가 풀린다.
 try {
   db.exec("ALTER TABLE users ADD COLUMN banned_until TEXT DEFAULT NULL");
-} catch (e) {}
+} catch (e) { }
 
 // 최고 관리자(오너) 여부 (0 = 일반, 1 = 오너).
 //   오너만 다른 사람에게 관리자 권한을 주고 뺏을 수 있다.
 //   오너 본인은 다른 관리자에게 정지/삭제/권한해제 당하지 않는다.
 try {
   db.exec("ALTER TABLE users ADD COLUMN is_super INTEGER NOT NULL DEFAULT 0");
-} catch (e) {}
+} catch (e) { }
 
 try {
   db.exec(`
@@ -118,4 +118,20 @@ try {
     ADD COLUMN avatar TEXT DEFAULT '/default-avatar.png'
   `);
 } catch (e) { }
+
+// 방명록
+db.exec(`
+  CREATE TABLE IF NOT EXISTS guestbook (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    owner TEXT NOT NULL,
+    author TEXT NOT NULL,
+    content TEXT NOT NULL,
+    date TEXT NOT NULL
+  )
+`);
+
+try {
+  db.exec("ALTER TABLE myapp_post ADD COLUMN is_deleted INTEGER DEFAULT 0");
+} catch (e) { }
+
 export default db;

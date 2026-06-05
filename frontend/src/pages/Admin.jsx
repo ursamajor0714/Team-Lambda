@@ -74,6 +74,7 @@ export default function Admin() {
   return (
     <div style={{ padding: 20 }}>
       <h2>관리자 · 유저 관리</h2>
+      <Link to="/admin/deleted-posts" className="btn" style={{ marginBottom: 16, display: 'inline-block' }}>🗑️ 삭제된 글 관리</Link>
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       <table border="1" cellPadding="6" style={{ borderCollapse: 'collapse' }}>

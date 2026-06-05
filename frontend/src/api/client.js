@@ -89,6 +89,11 @@ export const api = {
   // 유저
   userProfile: (username) =>
     request(`/api/users/${username}`),
+  // 유저 프로필 추가 탭
+  userComments: (username) => request(`/api/users/${username}/comments`),
+  guestbookList: (username) => request(`/api/users/${username}/guestbook`),
+  guestbookWrite: (username, content) => request(`/api/users/${username}/guestbook`, { method: "POST", body: { content } }),
+  guestbookDelete: (username, id) => request(`/api/users/${username}/guestbook/${id}`, { method: "DELETE" }),
 
   changePassword: (current_password, new_password, new_password2) =>
     request("/api/auth/change-password/", {
@@ -117,6 +122,11 @@ export const api = {
     request(`/api/admin/users/${id}/unban/`, { method: "POST" }),
   adminDeleteUser: (id) =>
     request(`/api/admin/users/${id}/`, { method: "DELETE" }),
+  // 삭제 게시판
+  adminDeletedPosts: () => request("/api/admin/deleted-posts/"),
+  adminRestorePost: (id) => request(`/api/admin/deleted-posts/${id}/restore/`, { method: "POST" }),
+  adminPermanentDelete: (id) => request(`/api/admin/deleted-posts/${id}/`, { method: "DELETE" }),
+
   adminSetRole: (id, is_admin) =>
     request(`/api/admin/users/${id}/role/`, {
       method: "POST",

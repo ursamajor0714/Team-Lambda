@@ -11,6 +11,7 @@ import Edit from './pages/Edit'
 import UserProfile from './pages/UserProfile'
 import ChangePassword from './pages/ChangePassword'
 import Admin from './pages/Admin'
+import DeletedPosts from './pages/DeletedPosts'
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/user/:username" element={<UserProfile />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/deleted-posts" element={<DeletedPosts />} />
       </Route>
     </Routes>
   )
