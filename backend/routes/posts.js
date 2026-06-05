@@ -191,7 +191,7 @@ router.post("/posts/create/", (req, res) => {
     .prepare(
       "INSERT INTO myapp_post (title, content, user, date, views, likes, hates, tag, is_notice) VALUES (?, ?, ?, datetime('now','localtime'), 0, 0, 0, ?, ?)",
     )
-    .run(title, content, user, tag || "#기타", finalIsNotice);
+    .run(title, content, username, tag || "#기타", finalIsNotice);
 
   res.status(201).json({ id: result.lastInsertRowid });
 });
