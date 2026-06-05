@@ -87,7 +87,8 @@ export const api = {
     request(`/api/posts/${pk}/comments/${cid}/`, { method: "DELETE" }),
 
   // 유저
-  userProfile: (username) => request(`/api/users/${username}`),
+  userProfile: (username) =>
+    request(`/api/users/${username}`),
 
   changePassword: (current_password, new_password, new_password2) =>
     request("/api/auth/change-password/", {
@@ -102,7 +103,6 @@ export const api = {
       method: "POST",
       body: { username },
     }),
-
   adminResetPassword: (id, new_password) =>
     request(`/api/admin/users/${id}/reset-password/`, {
       method: "POST",
