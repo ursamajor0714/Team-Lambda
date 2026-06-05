@@ -36,7 +36,7 @@ db.exec(`
     user TEXT,
     likes INTEGER NOT NULL DEFAULT 0,
     hates INTEGER NOT NULL DEFAULT 0,
-    tag TEXT DEFAULT '#기타'
+    tag TEXT DEFAULT '#기타',
     is_notice INTEGER DEFAULT 0
   )
 `);
@@ -88,6 +88,11 @@ try {
 
 try {
   db.exec("ALTER TABLE myapp_post ADD COLUMN tag TEXT DEFAULT '#기타'");
+} catch (e) { }
+
+// 공지글 여부 (0 = 일반글, 1 = 공지). 기존 DB에는 컬럼이 없어서 보강한다.
+try {
+  db.exec("ALTER TABLE myapp_post ADD COLUMN is_notice INTEGER DEFAULT 0");
 } catch (e) { }
 
 // 관리자 여부 (0 = 일반, 1 = 관리자)
