@@ -83,10 +83,16 @@ try {
   db.exec(
     "ALTER TABLE myapp_comment ADD COLUMN parent_id INTEGER DEFAULT NULL",
   );
-} catch (e) {}
+} catch (e) { }
 
 try {
   db.exec("ALTER TABLE myapp_post ADD COLUMN tag TEXT DEFAULT '#기타'");
-} catch (e) {}
+} catch (e) { }
 
+try {
+  db.exec(`
+    ALTER TABLE users
+    ADD COLUMN avatar TEXT DEFAULT '/default-avatar.png'
+  `);
+} catch (e) { }
 export default db;

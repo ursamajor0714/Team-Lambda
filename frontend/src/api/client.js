@@ -83,6 +83,9 @@ export const api = {
       method: "POST",
       body: { type },
     }),
+  // 유저
+  userProfile: (username) =>
+    request(`/api/users/${username}`),
 
   changePassword: (current_password, new_password, new_password2) =>
     request("/api/auth/change-password/", {
