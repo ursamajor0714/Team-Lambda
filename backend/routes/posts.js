@@ -108,12 +108,16 @@ router.get("/posts/:pk/", (req, res) => {
   const pk = req.params.pk;
 
   // ✅ [수정] users 테이블 JOIN해서 avatar 포함
-  const post = db.prepare(`
+  const post = db
+    .prepare(
+      `
     SELECT p.*, u.avatar
     FROM myapp_post p
     LEFT JOIN users u ON u.username = p.user
     WHERE p.id = ?
-  `).get(pk);
+  `,
+    )
+    .get(pk);
 
   if (!post) {
     return res.status(404).json({ detail: "존재하지 않는 글입니다." });
@@ -191,7 +195,7 @@ router.post("/posts/create/", (req, res) => {
     .prepare(
       "INSERT INTO myapp_post (title, content, user, date, views, likes, hates, tag, is_notice) VALUES (?, ?, ?, datetime('now','localtime'), 0, 0, 0, ?, ?)",
     )
-    .run(title, content, user, tag || "#기타", finalIsNotice);
+    .run(title, content, username, tag || "#기타", finalIsNotice);
 
   res.status(201).json({ id: result.lastInsertRowid });
 });
@@ -239,12 +243,12 @@ router.post("/posts/:pk/comments/", (req, res) => {
   if (!content) {
     return res.status(400).json({ detail: "댓글 내용을 입력해주세요." });
   }
-  const user = req.session.username || "익명";
+  const username = req.session.username || "익명";
   const result = db
     .prepare(
       "INSERT INTO myapp_comment (content, user, date, post_id, parent_id) VALUES (?, ?, datetime('now','localtime'), ?, ?)",
     )
-    .run(content, user, pk, parent_id || null);
+    .run(content, username, pk, parent_id || null);
 
   const created = db
     .prepare("SELECT date FROM myapp_comment WHERE id = ?")
@@ -253,7 +257,7 @@ router.post("/posts/:pk/comments/", (req, res) => {
     id: result.lastInsertRowid,
     post: Number(pk),
     content,
-    user,
+    user: username,
     date: created.date,
   });
 });
@@ -361,9 +365,14 @@ router.post("/posts/:pk/comments/:cid/like/", (req, res) => {
 
   if (existing) {
     if (existing.type === type) {
-      db.prepare("DELETE FROM myapp_comment_like WHERE id = ?").run(existing.id);
+      db.prepare("DELETE FROM myapp_comment_like WHERE id = ?").run(
+        existing.id,
+      );
     } else {
-      db.prepare("UPDATE myapp_comment_like SET type = ? WHERE id = ?").run(type, existing.id);
+      db.prepare("UPDATE myapp_comment_like SET type = ? WHERE id = ?").run(
+        type,
+        existing.id,
+      );
     }
   } else {
     db.prepare(
