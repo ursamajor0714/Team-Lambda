@@ -38,7 +38,7 @@ export default function Notice() {
     setParams({ ...Object.fromEntries(params), page: '1', page_size: String(size) })
   }
 
-  if (loading || !data) return <p>불러오는 중…</p>
+  if (loading || !data) return <p>불러오는 중....…</p>
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
