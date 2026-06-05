@@ -1,16 +1,3 @@
-// =============================================================================
-// routes/posts.js — 글 목록 / 상세 / 작성 / 좋아요 / 싫어요 / 댓글
-// -----------------------------------------------------------------------------
-// 📌 이 파일이 하는 일:
-//   글/댓글 관련 API들을 모았다. SQL로 직접 조회하고, 응답 모양(JSON)도 직접 만든다.
-//
-// 📌 better-sqlite3 사용법 복습:
-//   db.prepare(SQL).get(...)  → 한 줄 가져오기
-//   db.prepare(SQL).all(...)  → 여러 줄 가져오기 (배열)
-//   db.prepare(SQL).run(...)  → INSERT/UPDATE 처럼 바꾸기
-//   SQL 안의 '?' 는 값이 들어갈 자리 → SQL 인젝션 공격을 막는 안전한 방법이다.
-// =============================================================================
-
 import express from "express";
 import db from "../db.js";
 
@@ -19,66 +6,61 @@ const router = express.Router();
 // ── 글 목록 (GET /api/posts/) ────────────────────────────────────────
 router.get("/posts/", (req, res) => {
   const PAGE_SIZE = parseInt(req.query.page_size || "20", 10);
-  // 쿼리스트링(?query=...&page=...) 값 꺼내기
   const query = req.query.query || "";
   const searchType = req.query.search_type || "title";
   const searchPeriod = req.query.search_period || "all";
   const tag = decodeURIComponent(req.query.tag || "");
-  const page = parseInt(req.query.page || "1", 10); // 문자열 "1" → 숫자 1
+  const page = parseInt(req.query.page || "1", 10);
 
-  // WHERE 조건을 검색어/기간에 따라 동적으로 조립한다.
-  //   where: 조건문 조각들,  params: '?'에 들어갈 실제 값들
   const where = [];
   const params = [];
 
   if (tag) {
-    where.push("tag = ?");
+    where.push("p.tag = ?");
     params.push(tag);
   }
 
   if (query) {
-    // LIKE '%단어%' 는 "그 단어가 포함된" 검색
     if (searchType === "title") {
-      where.push("title LIKE ?");
+      where.push("p.title LIKE ?");
       params.push(`%${query}%`);
     } else if (searchType === "content") {
-      where.push("content LIKE ?");
+      where.push("p.content LIKE ?");
       params.push(`%${query}%`);
     } else if (searchType === "title_content") {
-      where.push("(title LIKE ? OR content LIKE ?)");
+      where.push("(p.title LIKE ? OR p.content LIKE ?)");
       params.push(`%${query}%`, `%${query}%`);
     } else if (searchType === "user") {
-      where.push("user LIKE ?");
+      where.push("p.user LIKE ?");
       params.push(`%${query}%`);
     }
   }
 
-  // 기간 필터 — 오늘 / 최근 7일 / 최근 30일.
-  //   DATE('now','localtime') 은 SQLite에서 "오늘 날짜"를 구하는 방법.
   if (searchPeriod === "today") {
-    where.push("DATE(date) = DATE('now','localtime')");
+    where.push("DATE(p.date) = DATE('now','localtime')");
   } else if (searchPeriod === "week") {
-    where.push("DATE(date) >= DATE('now','localtime','-7 day')");
+    where.push("DATE(p.date) >= DATE('now','localtime','-7 day')");
   } else if (searchPeriod === "month") {
-    where.push("DATE(date) >= DATE('now','localtime','-30 day')");
+    where.push("DATE(p.date) >= DATE('now','localtime','-30 day')");
   }
 
   const whereSql = where.length ? "WHERE " + where.join(" AND ") : "";
 
-  // 전체 개수 (페이지네이션 계산용)
   const total = db
-    .prepare(`SELECT COUNT(*) AS cnt FROM myapp_post ${whereSql}`)
+    .prepare(`SELECT COUNT(*) AS cnt FROM myapp_post p ${whereSql}`)
     .get(...params).cnt;
 
-  // 실제 목록 — 댓글 수(comment_count)를 서브쿼리로 같이 구한다.
-  //   ORDER BY id DESC → 최신글이 위로.  LIMIT/OFFSET → 페이지 나누기.
   const offset = (page - 1) * PAGE_SIZE;
+
+  // ✅ [수정] users 테이블 JOIN해서 avatar 포함
   const posts = db
     .prepare(
       `
     SELECT p.id, p.title, p.user, p.date, p.views, p.likes, p.hates,
-           (SELECT COUNT(*) FROM myapp_comment c WHERE c.post_id = p.id) AS comment_count
+           (SELECT COUNT(*) FROM myapp_comment c WHERE c.post_id = p.id) AS comment_count,
+           u.avatar
     FROM myapp_post p
+    LEFT JOIN users u ON u.username = p.user
     ${whereSql}
     ORDER BY p.id DESC
     LIMIT ? OFFSET ?
@@ -86,7 +68,6 @@ router.get("/posts/", (req, res) => {
     )
     .all(...params, PAGE_SIZE, offset);
 
-  // 상단 통계 — 홈 화면에 내려주는 값들.
   const todayPosts = db
     .prepare(
       "SELECT COUNT(*) AS c FROM myapp_post WHERE DATE(date)=DATE('now','localtime')",
@@ -103,14 +84,13 @@ router.get("/posts/", (req, res) => {
     )
     .get().c;
 
-  // 방문자 기록 — 오늘 이 IP가 처음이면 기록한다.
   if (!req.session.visited) {
     req.session.visited = true;
     db.prepare(
       "INSERT INTO myapp_visitor (ip, date) VALUES (?, DATE('now','localtime'))",
     ).run(req.sessionID);
   }
-  // 응답 모양은 프론트가 기대하는 형태와 똑같이 맞춰야 화면이 동작한다.
+
   res.json({
     posts,
     page,
@@ -124,20 +104,27 @@ router.get("/posts/", (req, res) => {
 });
 
 // ── 글 상세 (GET /api/posts/:pk/) ────────────────────────────────────
-//    ':pk' 는 주소의 변할 수 있는 부분 → req.params.pk 로 꺼낸다.
 router.get("/posts/:pk/", (req, res) => {
   const pk = req.params.pk;
-  const post = db.prepare("SELECT * FROM myapp_post WHERE id = ?").get(pk);
+
+  // ✅ [수정] users 테이블 JOIN해서 avatar 포함
+  const post = db.prepare(`
+    SELECT p.*, u.avatar
+    FROM myapp_post p
+    LEFT JOIN users u ON u.username = p.user
+    WHERE p.id = ?
+  `).get(pk);
+
   if (!post) {
     return res.status(404).json({ detail: "존재하지 않는 글입니다." });
   }
 
-  // 조회수 중복 방지
   const viewKey = `viewed_${pk}`;
   if (!req.session[viewKey]) {
     db.prepare("UPDATE myapp_post SET views = views + 1 WHERE id = ?").run(pk);
     req.session[viewKey] = true;
   }
+
   const comments = db
     .prepare(
       `
@@ -182,24 +169,30 @@ router.get("/posts/:pk/", (req, res) => {
 
   res.json({
     ...post,
-    comments: commentsWithReplies, // ← comments로 키 이름 맞추기
+    comments: commentsWithReplies,
     prev_post: prev || null,
     next_post: next || null,
   });
 });
 
 // ── 글 작성 (POST /api/posts/create/) ────────────────────────────────
+// backend/routes/posts.js
+
+// backend/routes/posts.js (글 작성 부분)
 router.post("/posts/create/", (req, res) => {
-  const { title, content, tag } = req.body;
-  if (!title || !content) {
-    return res.status(400).json({ detail: "제목과 내용을 모두 입력해주세요." });
-  }
-  const user = req.session.username || "익명";
+  const { title, content, tag, is_notice } = req.body;
+  const username = req.session.username || "익명";
+
+  // 백엔드 검증: 관리자가 아닌데 공지사항 등록을 시도할 경우 강제로 0 처리
+  const isAdmin = username === "admin";
+  const finalIsNotice = isAdmin && is_notice ? 1 : 0;
+
   const result = db
     .prepare(
-      "INSERT INTO myapp_post (title, content, user, date, views, likes, hates, tag) VALUES (?, ?, ?, datetime('now','localtime'), 0, 0, 0, ?)",
+      "INSERT INTO myapp_post (title, content, user, date, views, likes, hates, tag, is_notice) VALUES (?, ?, ?, datetime('now','localtime'), 0, 0, 0, ?, ?)",
     )
-    .run(title, content, user, tag || "#기타");
+    .run(title, content, user, tag || "#기타", finalIsNotice);
+
   res.status(201).json({ id: result.lastInsertRowid });
 });
 
@@ -209,19 +202,17 @@ router.post("/posts/:pk/like/", (req, res) => {
   const post = db.prepare("SELECT * FROM myapp_post WHERE id = ?").get(pk);
   if (!post) return res.status(404).json({ detail: "존재하지 않는 글입니다." });
 
-  // 세션으로 중복 방지 — 한 번 누른 사람은 또 못 누른다.
   const key = `liked_${pk}`;
   if (!req.session[key]) {
     db.prepare("UPDATE myapp_post SET likes = likes + 1 WHERE id = ?").run(pk);
     req.session[key] = true;
-    post.likes += 1; // 화면에 즉시 반영할 수 있게 응답값도 올려준다
+    post.likes += 1;
   }
   res.json({ likes: post.likes });
 });
 
 // ── 싫어요 (POST /api/posts/:pk/hate/) — 로그인 필요 ──────────────────
 router.post("/posts/:pk/hate/", (req, res) => {
-  // 로그인 안 했으면 거절한다.
   if (!req.session.userId) {
     return res.status(403).json({ detail: "로그인이 필요합니다." });
   }
@@ -255,13 +246,12 @@ router.post("/posts/:pk/comments/", (req, res) => {
     )
     .run(content, user, pk, parent_id || null);
 
-  // 프론트가 기대하는 댓글 모양으로 응답한다.
   const created = db
     .prepare("SELECT date FROM myapp_comment WHERE id = ?")
     .get(result.lastInsertRowid);
   res.status(201).json({
     id: result.lastInsertRowid,
-    post: Number(pk), // 문자열 pk를 숫자로 변환
+    post: Number(pk),
     content,
     user,
     date: created.date,
@@ -360,7 +350,7 @@ router.put("/posts/:pk/", (req, res) => {
 // ── 댓글 추천/반대 (POST /api/posts/:pk/comments/:cid/like/)
 router.post("/posts/:pk/comments/:cid/like/", (req, res) => {
   const { cid } = req.params;
-  const { type } = req.body; // 'like' or 'hate'
+  const { type } = req.body;
   const sessionId = req.sessionID;
 
   const existing = db
@@ -371,16 +361,9 @@ router.post("/posts/:pk/comments/:cid/like/", (req, res) => {
 
   if (existing) {
     if (existing.type === type) {
-      // 같은 버튼 다시 누르면 취소
-      db.prepare("DELETE FROM myapp_comment_like WHERE id = ?").run(
-        existing.id,
-      );
+      db.prepare("DELETE FROM myapp_comment_like WHERE id = ?").run(existing.id);
     } else {
-      // 다른 버튼 누르면 변경
-      db.prepare("UPDATE myapp_comment_like SET type = ? WHERE id = ?").run(
-        type,
-        existing.id,
-      );
+      db.prepare("UPDATE myapp_comment_like SET type = ? WHERE id = ?").run(type, existing.id);
     }
   } else {
     db.prepare(

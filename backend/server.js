@@ -19,6 +19,7 @@ import { csrfProtection } from "./middleware/csrf.js";
 import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/posts.js";
 import adminRoutes from "./routes/admin.js";
+import userRoutes from "./routes/users.js";
 
 // express()를 호출하면 "앱(서버)" 하나가 만들어진다.
 const app = express();
@@ -75,6 +76,7 @@ app.use(csrfProtection);
 app.use("/api", authRoutes);
 app.use("/api", postRoutes);
 app.use("/api", adminRoutes);
+app.use("/api/users", userRoutes);
 
 // -----------------------------------------------------------------------------
 // 7) 서버 켜기 — 8000번 포트에서 요청을 기다린다.

@@ -37,6 +37,7 @@ db.exec(`
     likes INTEGER NOT NULL DEFAULT 0,
     hates INTEGER NOT NULL DEFAULT 0,
     tag TEXT DEFAULT '#기타'
+    is_notice INTEGER DEFAULT 0
   )
 `);
 
@@ -83,11 +84,11 @@ try {
   db.exec(
     "ALTER TABLE myapp_comment ADD COLUMN parent_id INTEGER DEFAULT NULL",
   );
-} catch (e) {}
+} catch (e) { }
 
 try {
   db.exec("ALTER TABLE myapp_post ADD COLUMN tag TEXT DEFAULT '#기타'");
-} catch (e) {}
+} catch (e) { }
 
 // 관리자 여부 (0 = 일반, 1 = 관리자)
 try {
@@ -106,4 +107,10 @@ try {
   db.exec("ALTER TABLE users ADD COLUMN is_super INTEGER NOT NULL DEFAULT 0");
 } catch (e) {}
 
+try {
+  db.exec(`
+    ALTER TABLE users
+    ADD COLUMN avatar TEXT DEFAULT '/default-avatar.png'
+  `);
+} catch (e) { }
 export default db;

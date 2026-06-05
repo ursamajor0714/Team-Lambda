@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import detailad from '../assets/rnscp.png'
+import detailad2 from '../assets/rnscp2.png'
+import detailad3 from '../assets/rnscp3.png'
 
 export default function PostDetail() {
   const { pk } = useParams()
@@ -13,6 +16,14 @@ export default function PostDetail() {
   const [replyInput, setReplyInput] = useState({})
 const [showReply, setShowReply] = useState({})
 const [bestId, setBestId] = useState(null)
+const [adIndex, setAdIndex] = useState(0);
+const ads = [detailad, detailad2, detailad3];
+useEffect(() => {
+  const timer = setInterval(() => {
+    setAdIndex((prev) => (prev + 1) % ads.length);
+  }, 3000); 
+  return () => clearInterval(timer); // 페이지 나갈 때 타이머 정지
+}, [ads.length]);
 
 const load = () => api.postDetail(pk).then(data => {
   setPost(data)
@@ -120,7 +131,7 @@ const load = () => api.postDetail(pk).then(data => {
 
       {/* 2. 유저 정보 (좋아요/싫어요 버튼 포함) - 기존엔 아래쪽에 있던 버튼을 여기로 이동 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#888', fontSize: 13, marginBottom: 16 }}>
-  <span>{post.user} · {new Date(post.date).toLocaleString()}</span>
+  <span><Link to={`/user/${post.user}`}>{post.user}</Link> · {new Date(post.date).toLocaleString()}</span>
   <div style={{ display: 'flex', gap: 8 }}>
     <button className="btn" onClick={() => window.location.href=`/home?query=${post.user}&search_type=user`}>글검색</button>
     <button className="btn" onClick={onShare}>공유</button>
@@ -215,9 +226,23 @@ const load = () => api.postDetail(pk).then(data => {
       <button className="btn" onClick={() => navigate(`/post/${pk}/edit`)}>수정</button>
       <button className="btn" onClick={onDelete}>삭제</button>
     </>
-
   )}
 </div>
+</div>
+<div style={{ marginTop: '30px', textAlign: 'center' }}>
+  <a href="https://cgv.co.kr/cnm/cgvChart/movieChart/30001046" target="_blank" rel="noreferrer">
+    <img 
+      src={ads[adIndex]} // 배열에서 현재 순서의 이미지를 꺼내옵니다
+      alt="광고" 
+      width="900" 
+      height="280" 
+      style={{ 
+        border: '1px solid #eee', 
+        borderRadius: 6, 
+        background: '#f5f5f5'
+      }} 
+    />
+  </a>
 </div>
     </article>
   )

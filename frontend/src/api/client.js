@@ -60,12 +60,12 @@ export const api = {
   // 글
   postList: (params) => request("/api/posts/", { params }),
   postDetail: (pk) => request(`/api/posts/${pk}/`),
-  postCreate: (title, content, tag) =>
+  postCreate: (title, content, tag, is_notice) =>
     request("/api/posts/create/", {
       method: "POST",
       body: { title, content, tag },
     }),
-  postUpdate: (pk, title, content, tag) =>
+  postUpdate: (pk, title, content, tag, is_notice) =>
     request(`/api/posts/${pk}/`, {
       method: "PUT",
       body: { title, content, tag },
@@ -85,6 +85,10 @@ export const api = {
     }),
   commentDelete: (pk, cid) =>
     request(`/api/posts/${pk}/comments/${cid}/`, { method: "DELETE" }),
+
+  // 유저
+  userProfile: (username) =>
+    request(`/api/users/${username}`),
 
   changePassword: (current_password, new_password, new_password2) =>
     request("/api/auth/change-password/", {
