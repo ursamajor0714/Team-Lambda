@@ -8,6 +8,7 @@ export default function Landing() {
       <Link to="/home" style={{ display: 'inline-block' }}>
   <img src={logo} alt="Logo" width="700px" />
 </Link>
+<br />
 <div style={{ display: 'inline-block', textAlign: 'left' }}>
   <h1>
     <span style={{ background: 'linear-gradient(90deg, #f97316, #ef4444)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>keunho Yu</span><br/>
@@ -19,3 +20,4 @@ export default function Landing() {
     </div>
   )
 }
+dkdkdkdkdkdkdkk
