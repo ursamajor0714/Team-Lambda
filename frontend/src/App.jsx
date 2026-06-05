@@ -12,6 +12,7 @@ import UserProfile from './pages/UserProfile'
 import ChangePassword from './pages/ChangePassword'
 import Admin from './pages/Admin'
 import DeletedPosts from './pages/DeletedPosts'
+import Notice from './pages/Notice'
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/user/:username" element={<UserProfile />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/deleted-posts" element={<DeletedPosts />} />
+        <Route path="/notice" element={<Notice />} />
       </Route>
     </Routes>
   )
