@@ -63,12 +63,12 @@ export const api = {
   postCreate: (title, content, tag, is_notice) =>
     request("/api/posts/create/", {
       method: "POST",
-      body: { title, content, tag },
+      body: { title, content, tag, is_notice },
     }),
   postUpdate: (pk, title, content, tag, is_notice) =>
     request(`/api/posts/${pk}/`, {
       method: "PUT",
-      body: { title, content, tag },
+      body: { title, content, tag, is_notice },
     }),
   postDelete: (pk) => request(`/api/posts/${pk}/`, { method: "DELETE" }),
   likePost: (pk) => request(`/api/posts/${pk}/like/`, { method: "POST" }),
