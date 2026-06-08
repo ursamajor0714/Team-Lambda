@@ -88,7 +88,7 @@ export const api = {
 
   // 유저
   userProfile: (username) => request(`/api/users/${username}`),
-  userProfile: (username) => request(`/api/users/${username}`),
+
   // 유저 프로필 추가 탭
   userComments: (username) => request(`/api/users/${username}/comments`),
   guestbookList: (username) => request(`/api/users/${username}/guestbook`),
