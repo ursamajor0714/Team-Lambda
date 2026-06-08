@@ -28,7 +28,7 @@ router.get("/admin/users/", (req, res) => {
       `SELECT id, username, is_admin, is_super, banned_until,
         (banned_until IS NOT NULL AND banned_until > datetime('now','localtime')) AS is_banned
        FROM users
-       ORDER BY id`,
+       ORDER BY is_super DESC, id`,
     )
     .all();
   res.json({ users });
