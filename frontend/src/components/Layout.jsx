@@ -79,7 +79,6 @@ export default function Layout() {
     
     <div className="sidebar-divider" />
     
-    <li><Link to="/popular" className="sidebar-link">🔥 인기글</Link></li>
     <li><Link to="/notice" className="sidebar-link">📢 공지사항</Link></li>
   </ul>
 </aside>

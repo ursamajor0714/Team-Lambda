@@ -3,6 +3,25 @@ import { useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 
+function PostsTab({ username }) {
+  const [posts, setPosts] = useState(null)
+  useEffect(() => {
+    api.userProfile(username).then(d => setPosts(d.posts))
+  }, [username])
+  if (!posts) return <p>로딩중...</p>
+  if (posts.length === 0) return <p style={{ color: '#888' }}>작성한 글이 없어요.</p>
+  return (
+    <ul style={{ listStyle: 'none', padding: 0 }}>
+      {posts.map(p => (
+        <li key={p.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}>
+          <a href={`/post/${p.id}`}>{p.title}</a>
+          <span style={{ color: '#888', fontSize: 12, marginLeft: 8 }}>{new Date(p.date).toLocaleDateString()}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 // ── 삭제된 글 탭 ──────────────────────────────────────────────────────
 function DeletedPostsTab({ username }) {
   const [posts, setPosts] = useState(null)
@@ -172,16 +191,7 @@ export default function UserProfile() {
       {/* 내용 영역 */}
       <div style={{ marginTop: 20 }}>
 
-        {tab === 'posts' && (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {data.posts.map(p => (
-              <li key={p.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}>
-                <a href={`/post/${p.id}`}>{p.title}</a>
-                <span style={{ color: '#888', fontSize: 12, marginLeft: 8 }}>{new Date(p.date).toLocaleDateString()}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+      {tab === 'posts' && <PostsTab username={username} />}
 
         {tab === 'comments' && <CommentTab username={username} />}
         {tab === 'guest' && <GuestbookTab username={username} />}
