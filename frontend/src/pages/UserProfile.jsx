@@ -3,6 +3,29 @@ import { useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 
+// ── 삭제된 글 탭 ──────────────────────────────────────────────────────
+function DeletedPostsTab({ username }) {
+  const [posts, setPosts] = useState(null)
+
+  const load = () => api.myDeletedPosts(username).then(d => setPosts(d.posts))
+
+  useEffect(() => { load() }, [username])
+
+  if (!posts) return <p>로딩중...</p>
+  if (posts.length === 0) return <p style={{ color: '#888' }}>삭제된 글이 없어요.</p>
+
+  return (
+    <ul style={{ listStyle: 'none', padding: 0 }}>
+      {posts.map(p => (
+        <li key={p.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee', color: '#aaa' }}>
+          <span style={{ textDecoration: 'line-through' }}>{p.title}</span>
+          <span style={{ fontSize: 12, marginLeft: 8 }}>{new Date(p.date).toLocaleDateString()}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 // ── 댓글 탭 ───────────────────────────────────────────────────────────
 function CommentTab({ username }) {
   const [comments, setComments] = useState(null)
@@ -84,6 +107,9 @@ export default function UserProfile() {
   const { username } = useParams()
   const [data, setData] = useState(null)
   const [tab, setTab] = useState('posts')
+  // 메인 컴포넌트 안에서 user 가져오기
+  const { user } = useAuth()
+  const isMe = user?.username === username
 
   useEffect(() => {
     api.userProfile(username).then(setData)
@@ -114,6 +140,7 @@ export default function UserProfile() {
         <button className="btn" onClick={() => setTab('likes')}>좋아요</button>
         <button className="btn" onClick={() => setTab('comments')}>댓글</button>
         <button className="btn" onClick={() => setTab('guest')}>방명록</button>
+        {isMe && <button className="btn" onClick={() => setTab('deleted')}>🗑️ 삭제된 글</button>}
       </div>
 
       {/* 내용 영역 */}

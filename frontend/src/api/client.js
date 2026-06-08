@@ -94,6 +94,7 @@ export const api = {
   guestbookList: (username) => request(`/api/users/${username}/guestbook`),
   guestbookWrite: (username, content) => request(`/api/users/${username}/guestbook`, { method: "POST", body: { content } }),
   guestbookDelete: (username, id) => request(`/api/users/${username}/guestbook/${id}`, { method: "DELETE" }),
+  myDeletedPosts: (username) => request(`/api/users/${username}/deleted-posts`),
 
   changePassword: (current_password, new_password, new_password2) =>
     request("/api/auth/change-password/", {
