@@ -63,12 +63,12 @@ export const api = {
   postCreate: (title, content, tag, is_notice) =>
     request("/api/posts/create/", {
       method: "POST",
-      body: { title, content, tag },
+      body: { title, content, tag, is_notice },
     }),
   postUpdate: (pk, title, content, tag, is_notice) =>
     request(`/api/posts/${pk}/`, {
       method: "PUT",
-      body: { title, content, tag },
+      body: { title, content, tag, is_notice },
     }),
   postDelete: (pk) => request(`/api/posts/${pk}/`, { method: "DELETE" }),
   likePost: (pk) => request(`/api/posts/${pk}/like/`, { method: "POST" }),
@@ -87,13 +87,18 @@ export const api = {
     request(`/api/posts/${pk}/comments/${cid}/`, { method: "DELETE" }),
 
   // 유저
-  userProfile: (username) =>
-    request(`/api/users/${username}`),
+  userProfile: (username) => request(`/api/users/${username}`),
+  userProfile: (username) => request(`/api/users/${username}`),
   // 유저 프로필 추가 탭
   userComments: (username) => request(`/api/users/${username}/comments`),
   guestbookList: (username) => request(`/api/users/${username}/guestbook`),
-  guestbookWrite: (username, content) => request(`/api/users/${username}/guestbook`, { method: "POST", body: { content } }),
-  guestbookDelete: (username, id) => request(`/api/users/${username}/guestbook/${id}`, { method: "DELETE" }),
+  guestbookWrite: (username, content) =>
+    request(`/api/users/${username}/guestbook`, {
+      method: "POST",
+      body: { content },
+    }),
+  guestbookDelete: (username, id) =>
+    request(`/api/users/${username}/guestbook/${id}`, { method: "DELETE" }),
 
   changePassword: (current_password, new_password, new_password2) =>
     request("/api/auth/change-password/", {
@@ -108,6 +113,7 @@ export const api = {
       method: "POST",
       body: { username },
     }),
+
   adminResetPassword: (id, new_password) =>
     request(`/api/admin/users/${id}/reset-password/`, {
       method: "POST",
@@ -124,8 +130,10 @@ export const api = {
     request(`/api/admin/users/${id}/`, { method: "DELETE" }),
   // 삭제 게시판
   adminDeletedPosts: () => request("/api/admin/deleted-posts/"),
-  adminRestorePost: (id) => request(`/api/admin/deleted-posts/${id}/restore/`, { method: "POST" }),
-  adminPermanentDelete: (id) => request(`/api/admin/deleted-posts/${id}/`, { method: "DELETE" }),
+  adminRestorePost: (id) =>
+    request(`/api/admin/deleted-posts/${id}/restore/`, { method: "POST" }),
+  adminPermanentDelete: (id) =>
+    request(`/api/admin/deleted-posts/${id}/`, { method: "DELETE" }),
 
   adminSetRole: (id, is_admin) =>
     request(`/api/admin/users/${id}/role/`, {

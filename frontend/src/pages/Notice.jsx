@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import Footer from '../components/Footer'
+import { useAuth } from '../context/AuthContext'
 
 export default function Notice() {
   const [params, setParams] = useSearchParams()
@@ -14,6 +15,7 @@ export default function Notice() {
   const page = parseInt(params.get('page') || '1', 10)
   const pageSize = parseInt(params.get('page_size') || '20', 10)
   const tag = params.get('tag') || ''
+  const { user } = useAuth()
 
   useEffect(() => {
     setLoading(true)
@@ -38,7 +40,7 @@ export default function Notice() {
     setParams({ ...Object.fromEntries(params), page: '1', page_size: String(size) })
   }
 
-  if (loading || !data) return <p>불러오는 중…</p>
+  if (loading || !data) return <p>불러오는 중....…</p>
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -99,8 +101,11 @@ export default function Notice() {
         </tbody>
       </table>
 
-      {/* 페이징 (글쓰기 버튼 제거됨) */}
-      <div className="pagination" style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 20 }}>
+  {/* 페이징 (글쓰기 버튼 제거됨) */}
+  <div className="pagination" style={{ position: 'relative', display: 'flex', justifyContent: 'center', gap: 8, marginTop: 20 }}>
+        {user?.is_admin && (
+          <Link to="/write" className="btn btn-primary" style={{ position: 'absolute', left: 0 }}>글쓰기</Link>
+        )}
         <button className="btn" disabled={page <= 1}
           onClick={() => setParams({ ...Object.fromEntries(params), page: String(page - 1) })}>이전</button>
         <span style={{ padding: '6px 12px' }}>{page}</span>

@@ -3,20 +3,23 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext' // 1. useAuth 임포트 추가
 
-const TAGS = ['#일상', '#개그', '#정보공유', '#여행', '#요리', '#기타']
+
+
 
 export default function Write() {
   const navigate = useNavigate()
   const { user } = useAuth() // 2. 로그인 유저 정보 가져오기
+
+  const isAdmin = user && user.is_admin
+  const TAGS = isAdmin
+  ? ['#중요', '#업데이트', '#이벤트', '#안내']
+  : ['#일상', '#개그', '#정보공유', '#여행', '#요리', '#기타']
   
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [tag, setTag] = useState('#기타')
   const [isNotice, setIsNotice] = useState(false)
   const [error, setError] = useState('')
-
-  // 3. 관리자 여부 확인 (아이디가 'admin'인 경우만 true)
-  const isAdmin = user && user.username === 'admin'
 
   const onSubmit = async (e) => {
     e.preventDefault()

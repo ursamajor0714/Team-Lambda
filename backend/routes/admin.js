@@ -49,14 +49,16 @@ router.post("/admin/users/:id/username/", (req, res) => {
   const dup = db
     .prepare("SELECT id FROM users WHERE username = ? AND id != ?")
     .get(newName, id);
-  if (dup) return res.status(400).json({ detail: "이미 사용중인 아이디입니다." });
+  if (dup)
+    return res.status(400).json({ detail: "이미 사용중인 아이디입니다." });
 
   // ⚠️ 게시글/댓글은 작성자를 username '문자열'로 저장한다.
   //    아이디를 바꾸면 옛날 글/댓글의 작성자 이름도 같이 바꿔줘야 한다.
   const old = db
     .prepare("SELECT username, is_super FROM users WHERE id = ?")
     .get(id);
-  if (!old) return res.status(404).json({ detail: "존재하지 않는 유저입니다." });
+  if (!old)
+    return res.status(404).json({ detail: "존재하지 않는 유저입니다." });
   // 최고 관리자(오너)의 아이디는 본인 외에는 바꿀 수 없다.
   if (old.is_super && Number(id) !== req.session.userId) {
     return res
@@ -83,7 +85,11 @@ router.post("/admin/users/:id/reset-password/", (req, res) => {
   const target = db
     .prepare("SELECT is_super FROM users WHERE id = ?")
     .get(req.params.id);
-  if (target && target.is_super && Number(req.params.id) !== req.session.userId) {
+  if (
+    target &&
+    target.is_super &&
+    Number(req.params.id) !== req.session.userId
+  ) {
     return res
       .status(400)
       .json({ detail: "최고 관리자의 비밀번호는 변경할 수 없습니다." });
@@ -110,7 +116,9 @@ router.post("/admin/users/:id/ban/", (req, res) => {
     .prepare("SELECT is_super FROM users WHERE id = ?")
     .get(req.params.id);
   if (target && target.is_super) {
-    return res.status(400).json({ detail: "최고 관리자는 정지할 수 없습니다." });
+    return res
+      .status(400)
+      .json({ detail: "최고 관리자는 정지할 수 없습니다." });
   }
   // datetime('now','localtime','+7 day') 처럼 "지금부터 N일 뒤"를 만료시각으로 저장
   db.prepare(
@@ -138,7 +146,9 @@ router.delete("/admin/users/:id/", (req, res) => {
     .prepare("SELECT is_super FROM users WHERE id = ?")
     .get(req.params.id);
   if (target && target.is_super) {
-    return res.status(400).json({ detail: "최고 관리자는 삭제할 수 없습니다." });
+    return res
+      .status(400)
+      .json({ detail: "최고 관리자는 삭제할 수 없습니다." });
   }
   db.prepare("DELETE FROM users WHERE id = ?").run(req.params.id);
   res.json({ detail: "계정이 삭제되었습니다." });
@@ -165,7 +175,9 @@ router.post("/admin/users/:id/role/", requireSuper, (req, res) => {
     req.params.id,
   );
   res.json({
-    detail: makeAdmin ? "관리자로 지정했습니다." : "관리자 권한을 해제했습니다.",
+    detail: makeAdmin
+      ? "관리자로 지정했습니다."
+      : "관리자 권한을 해제했습니다.",
   });
 });
 
