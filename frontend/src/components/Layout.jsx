@@ -50,7 +50,6 @@ export default function Layout() {
             {user.is_admin && (
               <Link to="/admin" className="btn">관리자</Link>
             )}
-            <Link to="/change-password" className="btn">비밀번호 변경</Link>
             <button className="btn" onClick={onLogout}>로그아웃</button>
           </>
         ) : (
