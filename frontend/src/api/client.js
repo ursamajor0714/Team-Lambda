@@ -92,13 +92,9 @@ export const api = {
   // 유저 프로필 추가 탭
   userComments: (username) => request(`/api/users/${username}/comments`),
   guestbookList: (username) => request(`/api/users/${username}/guestbook`),
-  guestbookWrite: (username, content) =>
-    request(`/api/users/${username}/guestbook`, {
-      method: "POST",
-      body: { content },
-    }),
-  guestbookDelete: (username, id) =>
-    request(`/api/users/${username}/guestbook/${id}`, { method: "DELETE" }),
+  guestbookWrite: (username, content) => request(`/api/users/${username}/guestbook`, { method: "POST", body: { content } }),
+  guestbookDelete: (username, id) => request(`/api/users/${username}/guestbook/${id}`, { method: "DELETE" }),
+  myDeletedPosts: (username) => request(`/api/users/${username}/deleted-posts`),
 
   changePassword: (current_password, new_password, new_password2) =>
     request("/api/auth/change-password/", {

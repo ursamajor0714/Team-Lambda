@@ -114,4 +114,24 @@ router.delete("/:username/guestbook/:id", (req, res) => {
     res.json({ detail: "삭제되었습니다." });
 });
 
+// ── 내 삭제된 글 (GET /api/users/:username/deleted-posts) ─────────────
+router.get("/:username/deleted-posts", (req, res) => {
+    // 본인만 볼 수 있게
+    if (!req.session.userId || req.session.username !== req.params.username) {
+        return res.status(403).json({ detail: "권한이 없습니다." });
+    }
+
+    const posts = db
+        .prepare(`
+            SELECT id, title, date
+            FROM myapp_post
+            WHERE user = ? AND is_deleted = 1
+            ORDER BY id DESC
+            LIMIT 20
+        `)
+        .all(req.params.username);
+
+    res.json({ posts });
+});
+
 export default router;
